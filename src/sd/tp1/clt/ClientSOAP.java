@@ -17,7 +17,7 @@ public class ClientSOAP implements Client {
         multicast_socket = new MulticastSocket();
         setAddress();
         System.err.println("URL: " + findFileServer().toString());
-        System.err.println("ClientSOAP: Started");
+        System.err.println("ClientSOAPS: Started");
     }
 
     public URL findFileServer() {
