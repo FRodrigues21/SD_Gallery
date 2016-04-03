@@ -1,6 +1,11 @@
 package sd.tp1.svr;
 
+import sd.tp1.gui.GalleryContentProvider;
+
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,10 +13,7 @@ import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -32,13 +34,74 @@ public class FileServerSOAP {
         basePath = new File(path);
     }
 
+
+
     @WebMethod
-    public List<String> test() {
-        List<String> album = new ArrayList<String>();
-        album.add("LUIS");
-        album.add("FRANCISCO");
-        return album;
+    public List<String> getListOfAlbums() {
+        List<String> tmp = new ArrayList<>();
+        List<FileAlbum> albums = Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && ! f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> new FileAlbum(f)).collect(Collectors.toList());
+        for (FileAlbum a : albums) {
+            tmp.add(a.getName());
+        }
+        return tmp;
     }
+
+    @WebMethod
+    public List<String> getListOfPictures(String album){
+        File dirPath = new File(basePath + "/" + album);
+        List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
+        List<String> tmp = new ArrayList<>();
+        for(FilePicture p: pictures){
+          tmp.add(p.getName());
+        }
+        return tmp;
+    }
+
+    @WebMethod
+    public byte [] getPictureData(String album, String picture){
+        File dirPath = new File(basePath + "/" + album);
+        List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f) && f.getName().equalsIgnoreCase(picture)).map(f -> new FilePicture(f)).collect(Collectors.toList());
+        return pictures.get(0).getData();
+    }
+
+    @WebMethod
+    public String createAlbum(String album){
+        File dirPath = new File(basePath + "/" + album);
+        if(!dirPath.exists()) {
+            dirPath.mkdir();
+            return album;
+        }
+        return null;
+    }
+
+    @WebMethod
+    public void deleteAlbum(String album){
+        File dirPath = new File(basePath + "/" + album);
+        if(dirPath.exists())
+            dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
+    }
+
+    @WebMethod
+    public String uploadPicture(String album, String picture, byte [] data){
+        File filePath = new File(basePath + "/" + album + "/" + picture);
+        if(!filePath.exists()) {
+            try {
+                Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
+                return picture;
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    @WebMethod
+    public void deletePicture(String album, String picture){
+        File filePath = new File(basePath + "/" + album + "/" + picture);
+        if(filePath.exists())
+            filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+    }
+
 
     public static void main(String args[]) throws Exception {
         String path = args.length > 0 ? args[0] : ".";
@@ -80,5 +143,49 @@ public class FileServerSOAP {
             }
         }
     }
+
+    static class FileAlbum implements GalleryContentProvider.Album {
+        final File dir;
+
+        FileAlbum(File dir) {
+            this.dir = dir;
+        }
+
+        @Override
+        public String getName() {
+            return dir.getName();
+        }
+    }
+
+    static class FilePicture implements GalleryContentProvider.Picture {
+        final File file;
+
+        FilePicture(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public String getName() {
+            return file.getName();
+        }
+
+        byte[] getData() {
+            try {
+                return Files.readAllBytes(file.toPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+    static boolean isPicture(File f) {
+        String filename = f.getName();
+        int i = filename.lastIndexOf('.');
+        String ext = i < 0 ? "" : filename.substring(i + 1).toLowerCase();
+        return f.isFile() && EXTENSIONS.contains(ext) && !filename.startsWith(".") && !filename.endsWith(".deleted");
+    }
+
+    static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg", "jpeg", "png" });
 
 }

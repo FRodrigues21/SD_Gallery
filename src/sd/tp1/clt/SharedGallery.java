@@ -1,4 +1,4 @@
-package sd.tp1;
+package sd.tp1.clt;
 
 import javafx.application.Application;
 import javafx.stage.Stage;

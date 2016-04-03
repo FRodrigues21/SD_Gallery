@@ -53,8 +53,6 @@ public class LocalFilesystemGalleryContentProvider implements GalleryContentProv
 			}).start();
 		}
 	}
-	
-	
 
 	//
 	// Returns a list of albums, consisting in all the folders under root, whose name
