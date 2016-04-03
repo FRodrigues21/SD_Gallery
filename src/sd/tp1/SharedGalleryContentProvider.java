@@ -1,11 +1,23 @@
 package sd.tp1;
 
+<<<<<<< HEAD
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import sd.tp1.clt.Client;
 import sd.tp1.clt.ClientSOAP;
+=======
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+>>>>>>> origin/master
 import sd.tp1.gui.GalleryContentProvider;
 import sd.tp1.gui.Gui;
 
@@ -16,11 +28,18 @@ import sd.tp1.gui.Gui;
  */
 public class SharedGalleryContentProvider implements GalleryContentProvider{
 
+<<<<<<< HEAD
 	Gui gui;
 	Client client;
 
 	SharedGalleryContentProvider() throws IOException {
 		client = new ClientSOAP();
+=======
+	Gui gui;	
+
+	SharedGalleryContentProvider() {
+		// TODO: code to do when shared gallery starts
+>>>>>>> origin/master
 	}
 
 	/**
