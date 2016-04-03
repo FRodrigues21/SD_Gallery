@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -32,8 +33,11 @@ public class FileServerSOAP {
     }
 
     @WebMethod
-    public String test() {
-        return null;
+    public List<String> test() {
+        List<String> album = new ArrayList<String>();
+        album.add("LUIS");
+        album.add("FRANCISCO");
+        return album;
     }
 
     public static void main(String args[]) throws Exception {

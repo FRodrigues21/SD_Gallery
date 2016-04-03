@@ -1,7 +1,10 @@
 package sd.tp1.clt;
 
+import sd.tp1.clt.ws.*;
+
 import java.io.IOException;
 import java.net.*;
+import java.util.List;
 
 /**
  * Created by franciscorodrigues on 03/04/16.
@@ -12,12 +15,17 @@ public class ClientSOAP implements Client {
     private InetAddress client_address;
     private int client_port;
     private MulticastSocket multicast_socket;
+    private FileServerSOAP server;
 
     public ClientSOAP() throws IOException {
         multicast_socket = new MulticastSocket();
         setAddress();
-        System.err.println("URL: " + findFileServer().toString());
+        server = new FileServerSOAPService(findFileServer()).getFileServerSOAPPort();
         System.err.println("ClientSOAPS: Started");
+    }
+
+    public List<String> getAlbumList() {
+        return server.test();
     }
 
     public URL findFileServer() {

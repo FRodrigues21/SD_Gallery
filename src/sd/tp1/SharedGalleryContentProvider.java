@@ -26,7 +26,7 @@ import sd.tp1.gui.Gui;
 public class SharedGalleryContentProvider implements GalleryContentProvider{
 
 	Gui gui;
-	Client client;
+	ClientSOAP client;
 
 	SharedGalleryContentProvider() throws IOException {
 		client = new ClientSOAP();
@@ -49,9 +49,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider{
 	@Override
 	public List<Album> getListOfAlbums() {
 		// TODO: obtain remote information 
-		List<Album> lst = new ArrayList<Album>();
+		/*List<Album> lst = new ArrayList<Album>();
 		lst.add( new SharedAlbum("SD"));
-		lst.add( new SharedAlbum("RC"));
+		lst.add( new SharedAlbum("RC"));*/
+		List<Album> lst = new ArrayList<Album>();
+		for (String s : client.getAlbumList()) {
+			lst.add(new SharedAlbum(s));
+		}
 		return lst;
 	}
 
