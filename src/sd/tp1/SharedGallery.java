@@ -14,7 +14,7 @@ public class SharedGallery extends Application {
 	GalleryWindow window;
 	
 	public SharedGallery() throws IOException {
-		window = new GalleryWindow( new SharedGalleryContentProvider());
+		window = new GalleryWindow(new SharedGalleryContentProvider());
 	}	
 	
 	
