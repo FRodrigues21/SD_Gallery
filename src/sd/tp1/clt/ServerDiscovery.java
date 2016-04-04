@@ -68,7 +68,7 @@ public class ServerDiscovery implements Runnable{
                             }
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // TODO
                     }
                 }
 
