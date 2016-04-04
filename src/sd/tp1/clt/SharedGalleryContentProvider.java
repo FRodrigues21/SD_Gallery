@@ -18,6 +18,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	Gui gui;
 	ServerDiscovery discovery;
+	Album current_album = null;
 
 	SharedGalleryContentProvider() { }
 
@@ -25,12 +26,17 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		Thread t = new Thread(new Runnable() {
 			public void run()
 			{
-				gui.updateAlbums();
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				while(true) {
+					gui.updateAlbums();
+					if(current_album != null)
+						gui.updateAlbum(current_album);
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
+
 			}
 		});
 		t.start();
@@ -78,6 +84,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
+		current_album = album;
 		List<Picture> lst = new ArrayList<>();
 		for(Client e : discovery.getServers().values()) {
 			lst.addAll(e.getListOfPictures(album));
