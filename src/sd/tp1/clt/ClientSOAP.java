@@ -27,7 +27,10 @@ public class ClientSOAP implements Client {
 
     public List<GalleryContentProvider.Album> getListOfAlbums() {
         List<GalleryContentProvider.Album> lst = new ArrayList<>();
-        for (String s : server.getListOfAlbums()) {
+        List<String> tmp = server.getListOfAlbums();
+        if(tmp == null)
+            return null;
+        for (String s : tmp) {
             lst.add(new SharedAlbum(s));
         }
         return lst;
@@ -35,9 +38,11 @@ public class ClientSOAP implements Client {
 
     public List<GalleryContentProvider.Picture> getListOfPictures(GalleryContentProvider.Album album) {
         List<GalleryContentProvider.Picture> lst = new ArrayList<>();
-        for (String s : server.getListOfPictures(album.getName())) {
-            lst.add(new SharedPicture(s));
-        }
+        List<String> tmp = server.getListOfPictures(album.getName());
+        if(tmp == null)
+            return null;
+        for (String s : tmp)
+                lst.add(new SharedPicture(s));
         return lst;
     }
 

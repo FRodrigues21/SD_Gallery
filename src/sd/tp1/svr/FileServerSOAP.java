@@ -38,6 +38,8 @@ public class FileServerSOAP {
     public List<String> getListOfAlbums() {
         List<String> tmp = new ArrayList<>();
         List<FileAlbum> albums = Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && ! f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> new FileAlbum(f)).collect(Collectors.toList());
+        if(albums.size() == 0)
+            return null;
         for (FileAlbum a : albums) {
             tmp.add(a.getName());
         }
@@ -48,6 +50,8 @@ public class FileServerSOAP {
     public List<String> getListOfPictures(String album){
         File dirPath = new File(basePath + "/" + album);
         List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
+        if(pictures.size() == 0)
+            return null;
         List<String> tmp = new ArrayList<>();
         for(FilePicture p: pictures){
           tmp.add(p.getName());

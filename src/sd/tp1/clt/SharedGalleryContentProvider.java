@@ -87,7 +87,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		current_album = album;
 		List<Picture> lst = new ArrayList<>();
 		for(Client e : discovery.getServers().values()) {
-			lst.addAll(e.getListOfPictures(album));
+			List<Picture> tmp = e.getListOfPictures(album);
+			if(tmp != null)
+				lst.addAll(tmp);
 		}
 		return lst;
 	}
