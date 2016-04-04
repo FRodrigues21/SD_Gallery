@@ -31,7 +31,6 @@ public class ClientSOAP implements Client {
     // Gallery Methods
 
     public List<GalleryContentProvider.Album> getListOfAlbums() {
-        System.err.println("EXECUTOU DENTRO");
         List<GalleryContentProvider.Album> lst = new ArrayList<>();
         for (String s : server.getListOfAlbums()) {
             lst.add(new SharedAlbum(s));

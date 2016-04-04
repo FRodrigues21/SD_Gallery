@@ -34,7 +34,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public void register(Gui gui) {
 		if(this.gui == null) {
-			System.err.println("CHAMOU");
 			this.gui = gui;
 			try {
 				findServers(this.gui);
@@ -93,7 +92,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public Album createAlbum(String name) {
 		int server = 0 + (int)(Math.random() * discovery.getServers().size());
-		return discovery.getServers().get(server).createAlbum(name);
+		int cnt = 0;
+		for (Client e : discovery.getServers().values()) {
+			if(cnt == server)
+				return e.createAlbum(name);
+			cnt++;
+		}
+		return null;
 	}
 
 	/**
@@ -104,6 +109,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		for(Client e : discovery.getServers().values()) {
 			e.deleteAlbum(album);
 		}
+		gui.updateAlbums();
 	}
 	
 	/**
@@ -113,7 +119,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public Picture uploadPicture(Album album, String name, byte [] data) {
 		int server = 0 + (int)(Math.random() * discovery.getServers().size());
-		return discovery.getServers().get(server).uploadPicture(album, name, data);
+		int cnt = 0;
+		for (Client e : discovery.getServers().values()) {
+			if(cnt == server)
+				return e.uploadPicture(album, name, data);
+			cnt++;
+		}
+		return null;
 	}
 
 	/**

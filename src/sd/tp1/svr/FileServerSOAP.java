@@ -26,7 +26,7 @@ public class FileServerSOAP {
     private File basePath;
 
     public FileServerSOAP() {
-        this(".");
+        this("./FileServer");
     }
 
     public FileServerSOAP(String path) {
@@ -105,7 +105,7 @@ public class FileServerSOAP {
 
 
     public static void main(String args[]) throws Exception {
-        String path = args.length > 0 ? args[0] : ".";
+        String path = args.length > 0 ? args[0] : "./FileServer";
         Endpoint.publish("http://0.0.0.0:8080/FileServer", new FileServerSOAP(path));
         System.err.println("FileServerSOAP: Started");
 

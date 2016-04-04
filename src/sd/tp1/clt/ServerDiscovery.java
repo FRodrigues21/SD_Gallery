@@ -59,7 +59,7 @@ public class ServerDiscovery implements Runnable{
 
             reply = new DatagramPacket(buffer, buffer.length);
             try {
-                socket.setSoTimeout(1000);
+                socket.setSoTimeout(2000);
                 socket.receive(reply);
                 if(reply.getLength() > 0) {
                     String url = new String(reply.getData(), 0, reply.getLength());
@@ -67,8 +67,8 @@ public class ServerDiscovery implements Runnable{
                         if (!url.contains("REST")) {
                             System.err.println("Found SOAP: " + url);
                             servers.put(url, new ClientSOAP(url));
+                            gui.updateAlbums();
                         }
-                        gui.updateAlbums();
                     }
                 }
                 socket.close();
