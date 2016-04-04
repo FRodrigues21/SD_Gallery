@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerDiscovery implements Runnable{
 
     private Gui gui;
-    private int client_port = 900;
+    private int client_port = 9000;
     private InetAddress client_address = null;
     private MulticastSocket client_socket = null;
 
@@ -35,6 +35,7 @@ public class ServerDiscovery implements Runnable{
     }
 
     public void run() {
+
         try {
             client_address = InetAddress.getByName("224.1.2.3");
             client_socket = new MulticastSocket();
@@ -76,11 +77,13 @@ public class ServerDiscovery implements Runnable{
         });
         r.start();
 
+        // Sends packets
         Thread s = new Thread(new Runnable() {
             @Override
             public void run() {
                 System.err.println("SENDING THREAD STARTED!");
                 while (true) {
+                    System.err.println("SENDING SERVER DISCOVERY!");
                     try {
                         DatagramPacket request;
                         String data_req = "FileServer";
