@@ -13,14 +13,9 @@ import java.util.List;
  */
 public class ClientSOAP implements Client {
 
-    private URL server_url = null;
-    private InetAddress client_address;
-    private int client_port;
-    private MulticastSocket multicast_socket;
     private FileServerSOAP server;
 
     public ClientSOAP(String url) {
-        System.err.println("ClientSOAPS: Created from " + url);
         try {
             server = new FileServerSOAPService(new URL(url)).getFileServerSOAPPort();
         } catch (MalformedURLException e) {

@@ -141,6 +141,7 @@ public class FileServerSOAP {
                     socket.send(reply);
                 }
             }
+            Thread.sleep(5000);
         }
     }
 

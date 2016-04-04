@@ -11,7 +11,10 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -32,7 +35,6 @@ public class ServerDiscovery implements Runnable{
 
     public void run() {
         while(true) {
-            System.err.println("ENTROU THREAD");
             int client_port = 9000;
             InetAddress client_address = null;
             try {
@@ -61,18 +63,15 @@ public class ServerDiscovery implements Runnable{
             try {
                 socket.setSoTimeout(2000);
                 socket.receive(reply);
-                if(reply.getLength() > 0) {
-                    String url = new String(reply.getData(), 0, reply.getLength());
-                    System.err.println("CLIENT FOUND: " + url);
-                    if(!servers.containsKey(url) && url.contains("http")) {
-                        if (!url.contains("REST")) {
-                            System.err.println("Found SOAP: " + url);
-                            servers.put(url, new ClientSOAP(url));
-                            gui.updateAlbums();
-                        }
+                String url = new String(reply.getData(), 0, reply.getLength());
+                System.err.println("FOUND: " + url);
+                if(!servers.containsKey(url) && url.contains("http")) {
+                    if (!url.contains("REST")) {
+                        System.err.println("ADDED: " + url);
+                        servers.put(url, new ClientSOAP(url));
+                        gui.updateAlbums();
                     }
                 }
-                socket.close();
             } catch (IOException e) {
                 System.err.println("ERRO NO DISCOVERY 3");
             }
