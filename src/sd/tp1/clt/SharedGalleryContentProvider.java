@@ -27,11 +27,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			public void run()
 			{
 				while(true) {
-					gui.updateAlbums();
-					if(current_album != null)
-						gui.updateAlbum(current_album);
 					try {
-						Thread.sleep(5000);
+						gui.updateAlbums();
+						if(current_album != null)
+							gui.updateAlbum(current_album);
+						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
