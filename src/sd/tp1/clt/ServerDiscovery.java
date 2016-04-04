@@ -63,7 +63,7 @@ public class ServerDiscovery implements Runnable{
                 socket.receive(reply);
                 if(reply.getLength() > 0) {
                     String url = new String(reply.getData(), 0, reply.getLength());
-                    //System.err.println("CLIENT FOUND: " + url);
+                    System.err.println("CLIENT FOUND: " + url);
                     if(!servers.containsKey(url) && url.contains("http")) {
                         if (!url.contains("REST")) {
                             System.err.println("Found SOAP: " + url);
@@ -77,7 +77,7 @@ public class ServerDiscovery implements Runnable{
                 System.err.println("ERRO NO DISCOVERY 3");
             }
             try {
-                Thread.sleep(3000);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
