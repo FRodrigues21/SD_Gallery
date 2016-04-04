@@ -106,7 +106,9 @@ public class FileServerSOAP {
 
     public static void main(String args[]) throws Exception {
         String path = args.length > 0 ? args[0] : "./FileServer";
-        Endpoint.publish("http://0.0.0.0:8080/FileServer", new FileServerSOAP(path));
+        String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServer";
+        System.err.println(address_s);
+        Endpoint.publish(address_s, new FileServerSOAP(path));
         System.err.println("FileServerSOAP: Started");
 
         //Create a multicast socket
@@ -134,8 +136,7 @@ public class FileServerSOAP {
                 System.out.println("Request received: " + str_reply);
                 if (str_reply.contains("FileServer")) {
                     // Reply with address
-                    String fileserver = "http://0.0.0.0:8080/FileServer";
-                    reply = new DatagramPacket(fileserver.getBytes(), fileserver.getBytes().length);
+                    reply = new DatagramPacket(address_s.getBytes(), address_s.getBytes().length);
                     reply.setPort(incoming.getPort());
                     reply.setAddress(incoming.getAddress());
                     System.out.println("Sending reply: " + new String(reply.getData(), 0, reply.getLength()));

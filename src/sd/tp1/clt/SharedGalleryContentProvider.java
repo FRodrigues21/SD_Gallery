@@ -19,7 +19,24 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	Gui gui;
 	ServerDiscovery discovery;
 
-	SharedGalleryContentProvider() { }
+	SharedGalleryContentProvider() {
+		detectChanges();
+	}
+
+	private void detectChanges() {
+		Thread t = new Thread(new Runnable() {
+			public void run()
+			{
+				gui.updateAlbums();
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		t.start();
+	}
 
 	public void findServers(Gui gui) throws IOException {
 		if(discovery == null) {
