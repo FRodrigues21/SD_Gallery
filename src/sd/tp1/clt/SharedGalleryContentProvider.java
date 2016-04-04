@@ -19,9 +19,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	Gui gui;
 	ServerDiscovery discovery;
 
-	SharedGalleryContentProvider() {
-		detectChanges();
-	}
+	SharedGalleryContentProvider() { }
 
 	private void detectChanges() {
 		Thread t = new Thread(new Runnable() {
@@ -54,6 +52,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			this.gui = gui;
 			try {
 				findServers(this.gui);
+				detectChanges();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
