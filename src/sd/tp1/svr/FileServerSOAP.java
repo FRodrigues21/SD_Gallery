@@ -136,10 +136,8 @@ public class FileServerSOAP {
                 System.out.println("Request received: " + str_reply);
                 if (str_reply.contains("FileServer")) {
                     // Reply with address
-                    reply = new DatagramPacket(address_s.getBytes(), address_s.getBytes().length);
-                    reply.setPort(incoming.getPort());
-                    reply.setAddress(incoming.getAddress());
-                    System.out.println("Sending reply: " + new String(reply.getData(), 0, reply.getLength()));
+                    System.err.println("RESPONDER AO CLIENTE: " + incoming.getAddress() + " - " + incoming.getPort());
+                    reply = new DatagramPacket(address_s.getBytes(), address_s.getBytes().length, incoming.getAddress(), incoming.getPort());
                     socket.send(reply);
                 }
             }
