@@ -5,10 +5,7 @@ import sd.tp1.clt.ClientSOAP;
 import sd.tp1.gui.Gui;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -23,6 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerDiscovery implements Runnable{
 
     private Gui gui;
+    private int client_port = 900;
+    private InetAddress client_address = null;
+    private MulticastSocket client_socket = null;
+
     private Map<String,Client> servers = new ConcurrentHashMap<>();
 
     public Map<String,Client> getServers() {
@@ -34,53 +35,67 @@ public class ServerDiscovery implements Runnable{
     }
 
     public void run() {
-        while(true) {
-            int client_port = 9000;
-            InetAddress client_address = null;
-            try {
-                client_address = InetAddress.getByName("224.1.2.3");
-            } catch (UnknownHostException e) {
-                System.err.println("ERRO NO DISCOVERY 1");
-            }
+        try {
+            client_address = InetAddress.getByName("224.1.2.3");
+            client_socket = new MulticastSocket();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            MulticastSocket socket = null;
-            try {
-                socket = new MulticastSocket();
-                DatagramPacket request;
-                String data_req = "FileServer";
-                byte [] data_cont = data_req.getBytes();
-                request = new DatagramPacket(data_cont, data_cont.length, client_address, client_port);
-                socket.send(request);
-            } catch (IOException e) {
-                System.err.println("ERRO NO DISCOVERY 2");
-            }
-
-            DatagramPacket reply;
-
-            byte [] buffer = new byte[65536];
-
-            reply = new DatagramPacket(buffer, buffer.length);
-            try {
-                socket.setSoTimeout(2000);
-                socket.receive(reply);
-                String url = new String(reply.getData(), 0, reply.getLength());
-                System.err.println("FOUND: " + url);
-                if(!servers.containsKey(url) && url.contains("http")) {
-                    if (!url.contains("REST")) {
-                        System.err.println("ADDED: " + url);
-                        servers.put(url, new ClientSOAP(url));
-                        gui.updateAlbums();
+        // Recieves packets
+        Thread r = new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                System.err.println("RECEIVING THREAD STARTED!");
+                while(true) {
+                    DatagramPacket reply;
+                    byte [] buffer = new byte[65536];
+                    reply = new DatagramPacket(buffer, buffer.length);
+                    try {
+                        client_socket.setSoTimeout(1000);
+                        client_socket.receive(reply);
+                        if(reply.getLength() > 0) {
+                            String url = new String(reply.getData(), 0, reply.getLength());
+                            System.err.println("FOUND: " + url);
+                            if(!servers.containsKey(url) && url.contains("http")) {
+                                if (!url.contains("REST")) {
+                                    System.err.println("ADDED: " + url);
+                                    servers.put(url, new ClientSOAP(url));
+                                    gui.updateAlbums();
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (IOException e) {
-                System.err.println("ERRO NO DISCOVERY 3");
+
             }
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        });
+        r.start();
+
+        Thread s = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.err.println("SENDING THREAD STARTED!");
+                while (true) {
+                    try {
+                        DatagramPacket request;
+                        String data_req = "FileServer";
+                        byte [] data_cont = data_req.getBytes();
+                        request = new DatagramPacket(data_cont, data_cont.length, client_address, client_port);
+                        client_socket.send(request);
+                        Thread.sleep(5000);
+                    } catch (IOException | InterruptedException e) {
+                        System.err.println("ERRO NO DISCOVERY 2");
+                    }
+                }
             }
-        }
+        });
+        s.start();
+
     }
 
 }
