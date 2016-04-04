@@ -1,6 +1,8 @@
 package sd.tp1.clt;
 
 import java.io.IOException;
+import java.net.MulticastSocket;
+import java.util.ArrayList;
 import java.util.List;
 
 import sd.tp1.gui.GalleryContentProvider;
@@ -12,13 +14,18 @@ import sd.tp1.gui.Gui;
  * 
  * Project 1 implementation should complete this class. 
  */
-public class SharedGalleryContentProvider implements GalleryContentProvider{
+public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	Gui gui;
-	ClientSOAP client;
+	ServerDiscovery discovery;
 
-	SharedGalleryContentProvider() throws IOException {
-		client = new ClientSOAP();
+	SharedGalleryContentProvider() { }
+
+	public void findServers(Gui gui) throws IOException {
+		if(discovery == null) {
+			discovery = new ServerDiscovery(gui);
+			new Thread(discovery).start();
+		}
 	}
 
 	/**
@@ -26,8 +33,14 @@ public class SharedGalleryContentProvider implements GalleryContentProvider{
 	 */
 	@Override
 	public void register(Gui gui) {
-		if( this.gui == null ) {
+		if(this.gui == null) {
+			System.err.println("CHAMOU");
 			this.gui = gui;
+			try {
+				findServers(this.gui);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -37,7 +50,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider{
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
-		return client.getListOfAlbums();
+		List<Album> lst = new ArrayList<>();
+		for(Client e : discovery.getServers().values()) {
+			lst.addAll(e.getListOfAlbums());
+		}
+		return lst;
 	}
 
 	/**
@@ -46,7 +63,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider{
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		return client.getListOfPictures(album);
+		List<Picture> lst = new ArrayList<>();
+		for(Client e : discovery.getServers().values()) {
+			lst.addAll(e.getListOfPictures(album));
+		}
+		return lst;
 	}
 
 	/**
@@ -55,33 +76,44 @@ public class SharedGalleryContentProvider implements GalleryContentProvider{
 	 */
 	@Override
 	public byte[] getPictureData(Album album, Picture picture) {
-		return client.getPictureData(album, picture);
+		byte [] data;
+		for(Client e : discovery.getServers().values()) {
+			data = e.getPictureData(album, picture);
+			if(data != null)
+				return data;
+		}
+		return null;
 	}
 
-	/**
+	/*
 	 * Create a new album.
 	 * On error this method should return null.
 	 */
+
 	@Override
 	public Album createAlbum(String name) {
-		return client.createAlbum(name);
+		int server = 0 + (int)(Math.random() * discovery.getServers().size());
+		return discovery.getServers().get(server).createAlbum(name);
 	}
 
 	/**
 	 * Delete an existing album.
-	 */
+	*/
 	@Override
 	public void deleteAlbum(Album album) {
-		client.deleteAlbum(album);
+		for(Client e : discovery.getServers().values()) {
+			e.deleteAlbum(album);
+		}
 	}
 	
 	/**
 	 * Add a new picture to an album.
 	 * On error this method should return null.
-	 */
+	*/
 	@Override
 	public Picture uploadPicture(Album album, String name, byte [] data) {
-		return client.uploadPicture(album, name, data);
+		int server = 0 + (int)(Math.random() * discovery.getServers().size());
+		return discovery.getServers().get(server).uploadPicture(album, name, data);
 	}
 
 	/**
@@ -90,8 +122,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider{
 	 */
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
-		client.deletePicture(album, picture);
-		return true;
+		for(Client e : discovery.getServers().values()) {
+			return e.deletePicture(album, picture);
+		}
+		return false;
 	}
 
 }

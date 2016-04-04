@@ -34,8 +34,6 @@ public class FileServerSOAP {
         basePath = new File(path);
     }
 
-
-
     @WebMethod
     public List<String> getListOfAlbums() {
         List<String> tmp = new ArrayList<>();
@@ -96,10 +94,13 @@ public class FileServerSOAP {
     }
 
     @WebMethod
-    public void deletePicture(String album, String picture){
+    public Boolean deletePicture(String album, String picture){
         File filePath = new File(basePath + "/" + album + "/" + picture);
-        if(filePath.exists())
+        if(filePath.exists()) {
             filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+            return true;
+        }
+        return false;
     }
 
 

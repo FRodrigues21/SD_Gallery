@@ -19,16 +19,19 @@ public class ClientSOAP implements Client {
     private MulticastSocket multicast_socket;
     private FileServerSOAP server;
 
-    public ClientSOAP() throws IOException {
-        multicast_socket = new MulticastSocket();
-        setAddress();
-        server = new FileServerSOAPService(findFileServer()).getFileServerSOAPPort();
-        System.err.println("ClientSOAPS: Started");
+    public ClientSOAP(String url) {
+        System.err.println("ClientSOAPS: Created from " + url);
+        try {
+            server = new FileServerSOAPService(new URL(url)).getFileServerSOAPPort();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     // Gallery Methods
 
     public List<GalleryContentProvider.Album> getListOfAlbums() {
+        System.err.println("EXECUTOU DENTRO");
         List<GalleryContentProvider.Album> lst = new ArrayList<>();
         for (String s : server.getListOfAlbums()) {
             lst.add(new SharedAlbum(s));
@@ -60,59 +63,8 @@ public class ClientSOAP implements Client {
         return new SharedPicture(server.uploadPicture(album.getName(), name, data));
     }
 
-    public void deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
-        server.deletePicture(album.getName(), picture.getName());
-    }
-
-    // Connection Methods
-
-    public URL findFileServer() {
-        try {
-            return new URL(sendAndWait("FileServer"));
-        } catch (MalformedURLException e) {
-            System.exit(1);
-        }
-        return null;
-    }
-
-    private String sendAndWait(String message) {
-        byte [] data = message.getBytes();
-        DatagramPacket request = new DatagramPacket(data, data.length, client_address, client_port);
-        try {
-            multicast_socket.send(request);
-            return getSocketReply();
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    private String getSocketReply() {
-        DatagramPacket reply;
-        do {
-            byte [] buffer = new byte[65536];
-            reply = new DatagramPacket(buffer, buffer.length);
-            try {
-                multicast_socket.receive(reply);
-                if(reply.getLength() > 0) {
-                    buffer = reply.getData();
-                    return new String(buffer, 0, buffer.length);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } while (reply.getLength() == 0);
-        return null;
-    }
-
-    private boolean setAddress() {
-        client_port = 9000;
-        try {
-            client_address = InetAddress.getByName("224.1.2.3");
-            return true;
-        }
-        catch (Exception e) {
-            return false;
-        }
+    public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
+        return server.deletePicture(album.getName(), picture.getName());
     }
 
 }

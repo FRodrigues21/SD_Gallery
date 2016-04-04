@@ -122,12 +122,15 @@ public interface FileServerSOAP {
      * 
      * @param arg1
      * @param arg0
+     * @return
+     *     returns java.lang.Boolean
      */
     @WebMethod
+    @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "deletePicture", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.DeletePicture")
     @ResponseWrapper(localName = "deletePictureResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.DeletePictureResponse")
     @Action(input = "http://svr.tp1.sd/FileServerSOAP/deletePictureRequest", output = "http://svr.tp1.sd/FileServerSOAP/deletePictureResponse")
-    public void deletePicture(
+    public Boolean deletePicture(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
         @WebParam(name = "arg1", targetNamespace = "")
