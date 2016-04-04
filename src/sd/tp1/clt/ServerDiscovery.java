@@ -63,7 +63,7 @@ public class ServerDiscovery implements Runnable{
                 socket.receive(reply);
                 if(reply.getLength() > 0) {
                     String url = new String(reply.getData(), 0, reply.getLength());
-                    System.err.println("CLIENT FOUND: " + url);
+                    //System.err.println("CLIENT FOUND: " + url);
                     if(!servers.containsKey(url) && url.contains("http")) {
                         if (!url.contains("REST")) {
                             System.err.println("Found SOAP: " + url);
