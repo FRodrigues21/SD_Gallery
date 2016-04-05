@@ -3,7 +3,6 @@ package sd.tp1.clt;
 import sd.tp1.clt.ws.*;
 import sd.tp1.gui.GalleryContentProvider;
 
-import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +10,11 @@ import java.util.List;
 /**
  * Created by franciscorodrigues on 03/04/16.
  */
-public class ClientSOAP implements Client {
+public class RequestSOAP implements Request {
 
     private FileServerSOAP server;
 
-    public ClientSOAP(String url) {
+    public RequestSOAP(String url) {
         try {
             server = new FileServerSOAPService(new URL(url)).getFileServerSOAPPort();
         } catch (MalformedURLException e) {

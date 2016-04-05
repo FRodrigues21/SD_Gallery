@@ -1,17 +1,10 @@
 package sd.tp1.clt;
 
-import sd.tp1.clt.Client;
-import sd.tp1.clt.ClientSOAP;
 import sd.tp1.gui.Gui;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,9 +17,9 @@ public class ServerDiscovery implements Runnable{
     private InetAddress client_address = null;
     private MulticastSocket client_socket = null;
 
-    private Map<String,Client> servers = new ConcurrentHashMap<>();
+    private Map<String,Request> servers = new ConcurrentHashMap<>();
 
-    public Map<String,Client> getServers() {
+    public Map<String,Request> getServers() {
         return servers;
     }
 
@@ -44,7 +37,7 @@ public class ServerDiscovery implements Runnable{
             e.printStackTrace();
         }
 
-        // Recieves packets
+        // Receives packets
         Thread r = new Thread(new Runnable() {
             @Override
             public void run()
@@ -63,7 +56,12 @@ public class ServerDiscovery implements Runnable{
                             if(!servers.containsKey(url) && url.contains("http")) {
                                 if (!url.contains("REST")) {
                                     System.err.println("ADDED: " + url);
-                                    servers.put(url, new ClientSOAP(url));
+                                    servers.put(url, new RequestSOAP(url));
+                                    gui.updateAlbums();
+                                }
+                                else if(url.contains("REST")) {
+                                    System.err.println("ADDED: " + url);
+                                    servers.put(url, new RequestREST(url));
                                     gui.updateAlbums();
                                 }
                             }

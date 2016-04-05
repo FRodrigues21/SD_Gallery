@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by franciscorodrigues on 04/04/16.
  */
-public interface Client {
+public interface Request {
 
     List<GalleryContentProvider.Album> getListOfAlbums();
 

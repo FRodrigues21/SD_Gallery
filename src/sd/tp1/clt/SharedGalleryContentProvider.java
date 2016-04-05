@@ -1,7 +1,6 @@
 package sd.tp1.clt;
 
 import java.io.IOException;
-import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +71,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public List<Album> getListOfAlbums() {
 		List<Album> lst = new ArrayList<>();
-		for(Client e : discovery.getServers().values()) {
-			lst.addAll(e.getListOfAlbums());
+		for(Request e : discovery.getServers().values()) {
+            List<Album> tmp = e.getListOfAlbums();
+            if(tmp != null)
+			    lst.addAll(tmp);
 		}
 		return lst;
 	}
@@ -86,7 +87,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public List<Picture> getListOfPictures(Album album) {
 		current_album = album;
 		List<Picture> lst = new ArrayList<>();
-		for(Client e : discovery.getServers().values()) {
+		for(Request e : discovery.getServers().values()) {
 			List<Picture> tmp = e.getListOfPictures(album);
 			if(tmp != null)
 				lst.addAll(tmp);
@@ -101,7 +102,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public byte[] getPictureData(Album album, Picture picture) {
 		byte [] data;
-		for(Client e : discovery.getServers().values()) {
+		for(Request e : discovery.getServers().values()) {
 			data = e.getPictureData(album, picture);
 			if(data != null)
 				return data;
@@ -116,9 +117,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	@Override
 	public Album createAlbum(String name) {
-		int server = 0 + (int)(Math.random() * discovery.getServers().size());
+		int server = (int)(Math.random() * discovery.getServers().size());
 		int cnt = 0;
-		for (Client e : discovery.getServers().values()) {
+		for (Request e : discovery.getServers().values()) {
 			if(cnt == server)
 				return e.createAlbum(name);
 			cnt++;
@@ -131,10 +132,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public void deleteAlbum(Album album) {
-		for(Client e : discovery.getServers().values()) {
+		for(Request e : discovery.getServers().values()) {
 			e.deleteAlbum(album);
 		}
-		gui.updateAlbums();
+		gui.updateAlbums(); // TODO: Checkar se isto é mesmo preciso
 	}
 	
 	/**
@@ -143,9 +144,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public Picture uploadPicture(Album album, String name, byte [] data) {
-		int server = 0 + (int)(Math.random() * discovery.getServers().size());
+		int server = (int)(Math.random() * discovery.getServers().size());
 		int cnt = 0;
-		for (Client e : discovery.getServers().values()) {
+		for (Request e : discovery.getServers().values()) {
 			if(cnt == server)
 				return e.uploadPicture(album, name, data);
 			cnt++;
@@ -159,8 +160,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
-		for(Client e : discovery.getServers().values()) {
-			return e.deletePicture(album, picture);
+		for(Request e : discovery.getServers().values()) {
+			if(e.deletePicture(album, picture))
+				return true;
 		}
 		return false;
 	}

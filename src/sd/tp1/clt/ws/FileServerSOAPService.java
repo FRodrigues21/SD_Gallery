@@ -17,14 +17,14 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.2
  * 
  */
-@WebServiceClient(name = "FileServerSOAPService", targetNamespace = "http://svr.tp1.sd/", wsdlLocation = "http://localhost:8080/FileServer?wsdl")
+@WebServiceClient(name = "FileServerSOAPService", targetNamespace = "http://SOAP.svr.tp1.sd/", wsdlLocation = "http://localhost:8080/FileServer?wsdl")
 public class FileServerSOAPService
     extends Service
 {
 
     private final static URL FILESERVERSOAPSERVICE_WSDL_LOCATION;
     private final static WebServiceException FILESERVERSOAPSERVICE_EXCEPTION;
-    private final static QName FILESERVERSOAPSERVICE_QNAME = new QName("http://svr.tp1.sd/", "FileServerSOAPService");
+    private final static QName FILESERVERSOAPSERVICE_QNAME = new QName("http://SOAP.svr.tp1.sd/", "FileServerSOAPService");
 
     static {
         URL url = null;
@@ -69,7 +69,7 @@ public class FileServerSOAPService
      */
     @WebEndpoint(name = "FileServerSOAPPort")
     public FileServerSOAP getFileServerSOAPPort() {
-        return super.getPort(new QName("http://svr.tp1.sd/", "FileServerSOAPPort"), FileServerSOAP.class);
+        return super.getPort(new QName("http://SOAP.svr.tp1.sd/", "FileServerSOAPPort"), FileServerSOAP.class);
     }
 
     /**
@@ -81,7 +81,7 @@ public class FileServerSOAPService
      */
     @WebEndpoint(name = "FileServerSOAPPort")
     public FileServerSOAP getFileServerSOAPPort(WebServiceFeature... features) {
-        return super.getPort(new QName("http://svr.tp1.sd/", "FileServerSOAPPort"), FileServerSOAP.class, features);
+        return super.getPort(new QName("http://SOAP.svr.tp1.sd/", "FileServerSOAPPort"), FileServerSOAP.class, features);
     }
 
     private static URL __getWsdlLocation() {

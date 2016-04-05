@@ -24,20 +24,20 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _DeletePicture_QNAME = new QName("http://svr.tp1.sd/", "deletePicture");
-    private final static QName _CreateAlbumResponse_QNAME = new QName("http://svr.tp1.sd/", "createAlbumResponse");
-    private final static QName _DeleteAlbumResponse_QNAME = new QName("http://svr.tp1.sd/", "deleteAlbumResponse");
-    private final static QName _GetListOfAlbumsResponse_QNAME = new QName("http://svr.tp1.sd/", "getListOfAlbumsResponse");
-    private final static QName _UploadPicture_QNAME = new QName("http://svr.tp1.sd/", "uploadPicture");
-    private final static QName _GetPictureData_QNAME = new QName("http://svr.tp1.sd/", "getPictureData");
-    private final static QName _GetPictureDataResponse_QNAME = new QName("http://svr.tp1.sd/", "getPictureDataResponse");
-    private final static QName _GetListOfAlbums_QNAME = new QName("http://svr.tp1.sd/", "getListOfAlbums");
-    private final static QName _CreateAlbum_QNAME = new QName("http://svr.tp1.sd/", "createAlbum");
-    private final static QName _DeletePictureResponse_QNAME = new QName("http://svr.tp1.sd/", "deletePictureResponse");
-    private final static QName _GetListOfPictures_QNAME = new QName("http://svr.tp1.sd/", "getListOfPictures");
-    private final static QName _GetListOfPicturesResponse_QNAME = new QName("http://svr.tp1.sd/", "getListOfPicturesResponse");
-    private final static QName _DeleteAlbum_QNAME = new QName("http://svr.tp1.sd/", "deleteAlbum");
-    private final static QName _UploadPictureResponse_QNAME = new QName("http://svr.tp1.sd/", "uploadPictureResponse");
+    private final static QName _DeletePicture_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deletePicture");
+    private final static QName _CreateAlbumResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "createAlbumResponse");
+    private final static QName _DeleteAlbumResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deleteAlbumResponse");
+    private final static QName _GetPictureData_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getPictureData");
+    private final static QName _GetPictureDataResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getPictureDataResponse");
+    private final static QName _GetListOfAlbumsResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getListOfAlbumsResponse");
+    private final static QName _UploadPicture_QNAME = new QName("http://SOAP.svr.tp1.sd/", "uploadPicture");
+    private final static QName _DeletePictureResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deletePictureResponse");
+    private final static QName _GetListOfPictures_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getListOfPictures");
+    private final static QName _GetListOfPicturesResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getListOfPicturesResponse");
+    private final static QName _CreateAlbum_QNAME = new QName("http://SOAP.svr.tp1.sd/", "createAlbum");
+    private final static QName _GetListOfAlbums_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getListOfAlbums");
+    private final static QName _UploadPictureResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "uploadPictureResponse");
+    private final static QName _DeleteAlbum_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deleteAlbum");
     private final static QName _UploadPictureArg2_QNAME = new QName("", "arg2");
     private final static QName _GetPictureDataResponseReturn_QNAME = new QName("", "return");
 
@@ -164,7 +164,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link DeletePicture }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "deletePicture")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "deletePicture")
     public JAXBElement<DeletePicture> createDeletePicture(DeletePicture value) {
         return new JAXBElement<DeletePicture>(_DeletePicture_QNAME, DeletePicture.class, null, value);
     }
@@ -173,7 +173,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateAlbumResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "createAlbumResponse")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "createAlbumResponse")
     public JAXBElement<CreateAlbumResponse> createCreateAlbumResponse(CreateAlbumResponse value) {
         return new JAXBElement<CreateAlbumResponse>(_CreateAlbumResponse_QNAME, CreateAlbumResponse.class, null, value);
     }
@@ -182,34 +182,16 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link DeleteAlbumResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "deleteAlbumResponse")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "deleteAlbumResponse")
     public JAXBElement<DeleteAlbumResponse> createDeleteAlbumResponse(DeleteAlbumResponse value) {
         return new JAXBElement<DeleteAlbumResponse>(_DeleteAlbumResponse_QNAME, DeleteAlbumResponse.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetListOfAlbumsResponse }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "getListOfAlbumsResponse")
-    public JAXBElement<GetListOfAlbumsResponse> createGetListOfAlbumsResponse(GetListOfAlbumsResponse value) {
-        return new JAXBElement<GetListOfAlbumsResponse>(_GetListOfAlbumsResponse_QNAME, GetListOfAlbumsResponse.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link UploadPicture }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "uploadPicture")
-    public JAXBElement<UploadPicture> createUploadPicture(UploadPicture value) {
-        return new JAXBElement<UploadPicture>(_UploadPicture_QNAME, UploadPicture.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetPictureData }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "getPictureData")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getPictureData")
     public JAXBElement<GetPictureData> createGetPictureData(GetPictureData value) {
         return new JAXBElement<GetPictureData>(_GetPictureData_QNAME, GetPictureData.class, null, value);
     }
@@ -218,34 +200,34 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link GetPictureDataResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "getPictureDataResponse")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getPictureDataResponse")
     public JAXBElement<GetPictureDataResponse> createGetPictureDataResponse(GetPictureDataResponse value) {
         return new JAXBElement<GetPictureDataResponse>(_GetPictureDataResponse_QNAME, GetPictureDataResponse.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link GetListOfAlbums }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetListOfAlbumsResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "getListOfAlbums")
-    public JAXBElement<GetListOfAlbums> createGetListOfAlbums(GetListOfAlbums value) {
-        return new JAXBElement<GetListOfAlbums>(_GetListOfAlbums_QNAME, GetListOfAlbums.class, null, value);
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getListOfAlbumsResponse")
+    public JAXBElement<GetListOfAlbumsResponse> createGetListOfAlbumsResponse(GetListOfAlbumsResponse value) {
+        return new JAXBElement<GetListOfAlbumsResponse>(_GetListOfAlbumsResponse_QNAME, GetListOfAlbumsResponse.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CreateAlbum }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link UploadPicture }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "createAlbum")
-    public JAXBElement<CreateAlbum> createCreateAlbum(CreateAlbum value) {
-        return new JAXBElement<CreateAlbum>(_CreateAlbum_QNAME, CreateAlbum.class, null, value);
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "uploadPicture")
+    public JAXBElement<UploadPicture> createUploadPicture(UploadPicture value) {
+        return new JAXBElement<UploadPicture>(_UploadPicture_QNAME, UploadPicture.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DeletePictureResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "deletePictureResponse")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "deletePictureResponse")
     public JAXBElement<DeletePictureResponse> createDeletePictureResponse(DeletePictureResponse value) {
         return new JAXBElement<DeletePictureResponse>(_DeletePictureResponse_QNAME, DeletePictureResponse.class, null, value);
     }
@@ -254,7 +236,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link GetListOfPictures }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "getListOfPictures")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getListOfPictures")
     public JAXBElement<GetListOfPictures> createGetListOfPictures(GetListOfPictures value) {
         return new JAXBElement<GetListOfPictures>(_GetListOfPictures_QNAME, GetListOfPictures.class, null, value);
     }
@@ -263,27 +245,45 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link GetListOfPicturesResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "getListOfPicturesResponse")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getListOfPicturesResponse")
     public JAXBElement<GetListOfPicturesResponse> createGetListOfPicturesResponse(GetListOfPicturesResponse value) {
         return new JAXBElement<GetListOfPicturesResponse>(_GetListOfPicturesResponse_QNAME, GetListOfPicturesResponse.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link DeleteAlbum }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CreateAlbum }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "deleteAlbum")
-    public JAXBElement<DeleteAlbum> createDeleteAlbum(DeleteAlbum value) {
-        return new JAXBElement<DeleteAlbum>(_DeleteAlbum_QNAME, DeleteAlbum.class, null, value);
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "createAlbum")
+    public JAXBElement<CreateAlbum> createCreateAlbum(CreateAlbum value) {
+        return new JAXBElement<CreateAlbum>(_CreateAlbum_QNAME, CreateAlbum.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetListOfAlbums }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getListOfAlbums")
+    public JAXBElement<GetListOfAlbums> createGetListOfAlbums(GetListOfAlbums value) {
+        return new JAXBElement<GetListOfAlbums>(_GetListOfAlbums_QNAME, GetListOfAlbums.class, null, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link UploadPictureResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://svr.tp1.sd/", name = "uploadPictureResponse")
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "uploadPictureResponse")
     public JAXBElement<UploadPictureResponse> createUploadPictureResponse(UploadPictureResponse value) {
         return new JAXBElement<UploadPictureResponse>(_UploadPictureResponse_QNAME, UploadPictureResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link DeleteAlbum }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "deleteAlbum")
+    public JAXBElement<DeleteAlbum> createDeleteAlbum(DeleteAlbum value) {
+        return new JAXBElement<DeleteAlbum>(_DeleteAlbum_QNAME, DeleteAlbum.class, null, value);
     }
 
     /**

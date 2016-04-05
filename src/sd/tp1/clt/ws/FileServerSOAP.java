@@ -18,7 +18,7 @@ import javax.xml.ws.ResponseWrapper;
  * Generated source version: 2.2
  * 
  */
-@WebService(name = "FileServerSOAP", targetNamespace = "http://svr.tp1.sd/")
+@WebService(name = "FileServerSOAP", targetNamespace = "http://SOAP.svr.tp1.sd/")
 @XmlSeeAlso({
     ObjectFactory.class
 })
@@ -32,9 +32,9 @@ public interface FileServerSOAP {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getListOfAlbums", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbums")
-    @ResponseWrapper(localName = "getListOfAlbumsResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbumsResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/getListOfAlbumsRequest", output = "http://svr.tp1.sd/FileServerSOAP/getListOfAlbumsResponse")
+    @RequestWrapper(localName = "getListOfAlbums", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbums")
+    @ResponseWrapper(localName = "getListOfAlbumsResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbumsResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/getListOfAlbumsRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/getListOfAlbumsResponse")
     public List<String> getListOfAlbums();
 
     /**
@@ -45,9 +45,9 @@ public interface FileServerSOAP {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getListOfPictures", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfPictures")
-    @ResponseWrapper(localName = "getListOfPicturesResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfPicturesResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/getListOfPicturesRequest", output = "http://svr.tp1.sd/FileServerSOAP/getListOfPicturesResponse")
+    @RequestWrapper(localName = "getListOfPictures", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfPictures")
+    @ResponseWrapper(localName = "getListOfPicturesResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfPicturesResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/getListOfPicturesRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/getListOfPicturesResponse")
     public List<String> getListOfPictures(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
@@ -61,9 +61,9 @@ public interface FileServerSOAP {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getPictureData", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.GetPictureData")
-    @ResponseWrapper(localName = "getPictureDataResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.GetPictureDataResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/getPictureDataRequest", output = "http://svr.tp1.sd/FileServerSOAP/getPictureDataResponse")
+    @RequestWrapper(localName = "getPictureData", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetPictureData")
+    @ResponseWrapper(localName = "getPictureDataResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetPictureDataResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/getPictureDataRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/getPictureDataResponse")
     public byte[] getPictureData(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -78,9 +78,9 @@ public interface FileServerSOAP {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "createAlbum", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbum")
-    @ResponseWrapper(localName = "createAlbumResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbumResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/createAlbumRequest", output = "http://svr.tp1.sd/FileServerSOAP/createAlbumResponse")
+    @RequestWrapper(localName = "createAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbum")
+    @ResponseWrapper(localName = "createAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbumResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/createAlbumRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/createAlbumResponse")
     public String createAlbum(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
@@ -90,9 +90,9 @@ public interface FileServerSOAP {
      * @param arg0
      */
     @WebMethod
-    @RequestWrapper(localName = "deleteAlbum", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.DeleteAlbum")
-    @ResponseWrapper(localName = "deleteAlbumResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.DeleteAlbumResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/deleteAlbumRequest", output = "http://svr.tp1.sd/FileServerSOAP/deleteAlbumResponse")
+    @RequestWrapper(localName = "deleteAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.DeleteAlbum")
+    @ResponseWrapper(localName = "deleteAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.DeleteAlbumResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/deleteAlbumRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/deleteAlbumResponse")
     public void deleteAlbum(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
@@ -107,9 +107,9 @@ public interface FileServerSOAP {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "uploadPicture", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.UploadPicture")
-    @ResponseWrapper(localName = "uploadPictureResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.UploadPictureResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/uploadPictureRequest", output = "http://svr.tp1.sd/FileServerSOAP/uploadPictureResponse")
+    @RequestWrapper(localName = "uploadPicture", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.UploadPicture")
+    @ResponseWrapper(localName = "uploadPictureResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.UploadPictureResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/uploadPictureRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/uploadPictureResponse")
     public String uploadPicture(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
@@ -127,9 +127,9 @@ public interface FileServerSOAP {
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "deletePicture", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.DeletePicture")
-    @ResponseWrapper(localName = "deletePictureResponse", targetNamespace = "http://svr.tp1.sd/", className = "sd.tp1.clt.ws.DeletePictureResponse")
-    @Action(input = "http://svr.tp1.sd/FileServerSOAP/deletePictureRequest", output = "http://svr.tp1.sd/FileServerSOAP/deletePictureResponse")
+    @RequestWrapper(localName = "deletePicture", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.DeletePicture")
+    @ResponseWrapper(localName = "deletePictureResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.DeletePictureResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/FileServerSOAP/deletePictureRequest", output = "http://SOAP.svr.tp1.sd/FileServerSOAP/deletePictureResponse")
     public Boolean deletePicture(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,

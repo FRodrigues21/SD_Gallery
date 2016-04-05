@@ -1,4 +1,4 @@
-package sd.tp1.svr;
+package sd.tp1.svr.SOAP;
 
 import sd.tp1.gui.GalleryContentProvider;
 
@@ -6,10 +6,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -17,13 +14,18 @@ import java.util.stream.Collectors;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-import javax.xml.crypto.Data;
 import javax.xml.ws.Endpoint;
 
 @WebService
 public class FileServerSOAP {
 
     private File basePath;
+
+    // Sao iguais no rest
+    private static String path = "./FileServer";
+    private static MulticastSocket server_socket = null;
+    private static InetAddress server_address = null;
+    private static int server_port = 9000;
 
     public FileServerSOAP() {
         this("./FileServer");
@@ -109,46 +111,61 @@ public class FileServerSOAP {
         return false;
     }
 
+    private static void sendIPToClient(String reply, InetAddress client_address, int client_port) {
+        DatagramPacket p = new DatagramPacket(reply.getBytes(), reply.getBytes().length, client_address, client_port);
+        try {
+            server_socket.send(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String args[]) throws Exception {
-        String path = args.length > 0 ? args[0] : "./FileServer";
+
+        // Get local address and publish
         String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServer";
-        System.err.println(address_s);
-        Endpoint.publish("http://0.0.0.0:8080/FileServer", new FileServerSOAP(path));
-        System.err.println("FileServerSOAP: Started");
+        Endpoint.publish(address_s, new FileServerSOAP(path));
+        System.err.println("FileServerSOAP: Started @ " + address_s);
 
         //Create a multicast socket
-        final int port = 9000;
-        final InetAddress address = InetAddress.getByName("224.1.2.3");
-        if (!address.isMulticastAddress()) {
+        server_address = InetAddress.getByName("224.1.2.3");
+        if (!server_address.isMulticastAddress()) {
             System.out.println("The address is not multicast!");
             System.exit(1);
         }
-        MulticastSocket socket = new MulticastSocket(port);
+        server_socket = new MulticastSocket(server_port);
 
         // Join a multicast group
-        socket.joinGroup(address);
+        server_socket.joinGroup(server_address);
 
-        // Wait for request and reply
-        DatagramPacket incoming;
-        DatagramPacket reply;
-        while (true) {
-            // Request received
-            byte [] buffer = new byte[65536];
-            incoming = new DatagramPacket(buffer, buffer.length);
-            socket.receive(incoming);
-            if(incoming.getLength() > 0) {
-                String str_reply = new String(incoming.getData(), 0, incoming.getLength());
-                System.out.println("Request received: " + str_reply);
-                if (str_reply.contains("FileServer")) {
-                    // Reply with address
-                    System.err.println("RESPONDER AO CLIENTE: " + incoming.getAddress() + " - " + incoming.getPort());
-                    reply = new DatagramPacket(address_s.getBytes(), address_s.getBytes().length, incoming.getAddress(), incoming.getPort());
-                    socket.send(reply);
+
+        // Receives
+        Thread r = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                System.err.println("RECEIVING THREAD STARTED!");
+                while(true) {
+                    try {
+                        byte [] buffer = new byte[65536];
+                        DatagramPacket incoming = new DatagramPacket(buffer, buffer.length);
+                        server_socket.receive(incoming);
+                        if(incoming.getLength() > 0) {
+                            String incoming_message = new String(incoming.getData(), 0, incoming.getLength());
+                            System.out.println("Request received: " + incoming_message);
+                            if (incoming_message.contains("FileServer"))
+                                sendIPToClient(address_s, incoming.getAddress(), incoming.getPort());
+                        }
+                        else
+                            Thread.sleep(5000);
+                    }
+                    catch (IOException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            Thread.sleep(5000);
-        }
+        });
+        r.start();
+
     }
 
     static class FileAlbum implements GalleryContentProvider.Album {
