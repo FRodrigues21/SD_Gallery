@@ -48,6 +48,7 @@ public class FileServerSOAP {
 
     @WebMethod
     public List<String> getListOfPictures(String album){
+        System.err.println(album);
         File dirPath = new File(basePath + "/" + album);
         List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
         if(pictures.size() == 0)
