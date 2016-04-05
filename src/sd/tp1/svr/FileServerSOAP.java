@@ -112,7 +112,7 @@ public class FileServerSOAP {
         String path = args.length > 0 ? args[0] : "./FileServer";
         String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServer";
         System.err.println(address_s);
-        Endpoint.publish(address_s, new FileServerSOAP(path));
+        Endpoint.publish("http://0.0.0.0:8080/FileServer", new FileServerSOAP(path));
         System.err.println("FileServerSOAP: Started");
 
         //Create a multicast socket
