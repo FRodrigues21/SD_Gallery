@@ -50,21 +50,27 @@ public class FileServerSOAP {
     public List<String> getListOfPictures(String album){
         System.err.println(album);
         File dirPath = new File(basePath + "/" + album);
-        List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-        if(pictures.size() == 0)
-            return null;
-        List<String> tmp = new ArrayList<>();
-        for(FilePicture p: pictures){
-          tmp.add(p.getName());
+        if(dirPath.exists()) {
+            List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
+            if(pictures.size() == 0)
+                return null;
+            List<String> tmp = new ArrayList<>();
+            for(FilePicture p: pictures){
+                tmp.add(p.getName());
+            }
+            return tmp;
         }
-        return tmp;
+        return null;
     }
 
     @WebMethod
     public byte [] getPictureData(String album, String picture){
         File dirPath = new File(basePath + "/" + album);
-        List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f) && f.getName().equalsIgnoreCase(picture)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-        return pictures.get(0).getData();
+        if(dirPath.exists()) {
+            List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f) && f.getName().equalsIgnoreCase(picture)).map(f -> new FilePicture(f)).collect(Collectors.toList());
+            return pictures.get(0).getData();
+        }
+        return null;
     }
 
     @WebMethod
