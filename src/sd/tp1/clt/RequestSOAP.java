@@ -24,25 +24,12 @@ public class RequestSOAP implements Request {
 
     // Gallery Methods
 
-    public List<GalleryContentProvider.Album> getListOfAlbums() {
-        List<GalleryContentProvider.Album> lst = new ArrayList<>();
-        List<String> tmp = server.getListOfAlbums();
-        if(tmp == null)
-            return null;
-        for (String s : tmp) {
-            lst.add(new SharedAlbum(s));
-        }
-        return lst;
+    public List<String> getListOfAlbums() {
+        return server.getListOfAlbums();
     }
 
-    public List<GalleryContentProvider.Picture> getListOfPictures(GalleryContentProvider.Album album) {
-        List<GalleryContentProvider.Picture> lst = new ArrayList<>();
-        List<String> tmp = server.getListOfPictures(album.getName());
-        if(tmp == null)
-            return null;
-        for (String s : tmp)
-                lst.add(new SharedPicture(s));
-        return lst;
+    public List<String> getListOfPictures(GalleryContentProvider.Album album) {
+        return server.getListOfPictures(album.getName());
     }
 
     public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {

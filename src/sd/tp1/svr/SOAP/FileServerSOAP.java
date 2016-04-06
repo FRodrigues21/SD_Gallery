@@ -22,13 +22,13 @@ public class FileServerSOAP {
     private File basePath;
 
     // Sao iguais no rest
-    private static String path = "./FileServer";
+    private static String path = "./FileServerSOAP";
     private static MulticastSocket server_socket = null;
     private static InetAddress server_address = null;
     private static int server_port = 9000;
 
     public FileServerSOAP() {
-        this("./FileServer");
+        this("./FileServerSOAP");
     }
 
     public FileServerSOAP(String path) {
@@ -62,10 +62,10 @@ public class FileServerSOAP {
 
     @WebMethod
     public byte [] getPictureData(String album, String picture){
-        File dirPath = new File(basePath + "/" + album);
-        if(dirPath.exists()) {
-            List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f) && f.getName().equalsIgnoreCase(picture)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-            return pictures.get(0).getData();
+        File imgPath = new File(basePath + "/" + album + "/" + picture);
+        if(imgPath.exists()) {
+            FilePicture tmp = new FilePicture(imgPath);
+            return tmp.getData();
         }
         return null;
     }
@@ -123,7 +123,7 @@ public class FileServerSOAP {
     public static void main(String args[]) throws Exception {
 
         // Get local address and publish
-        String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServer";
+        String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServerSOAP";
         Endpoint.publish(address_s, new FileServerSOAP(path));
         System.err.println("FileServerSOAP: Started @ " + address_s);
 
@@ -137,7 +137,6 @@ public class FileServerSOAP {
 
         // Join a multicast group
         server_socket.joinGroup(server_address);
-
 
         // Receives
         Thread r = new Thread(new Runnable(){

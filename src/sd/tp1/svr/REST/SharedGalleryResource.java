@@ -43,28 +43,28 @@ public class SharedGalleryResource {
     @Path("/{album}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfPictures(@PathParam("album") String album) {
+        List<String> tmp = new ArrayList<>();
         File dirPath = new File(basePath + "/" + album);
         if(dirPath.exists()) {
             List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-            List<String> tmp = new ArrayList<>();
             for(FilePicture p: pictures){
                 tmp.add(p.getName());
             }
             return Response.ok(tmp).build();
         }
-        return null;
+        return Response.ok(tmp).build();
     }
 
     @GET
     @Path("/{album}/{picture}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getPictureData(@PathParam("album") String album, @PathParam("picture") String picture) {
-        File dirPath = new File(basePath + "/" + album);
-        if(dirPath.exists()) {
-            List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f) && f.getName().equalsIgnoreCase(picture)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-            return Response.ok(pictures.get(0).getData()).build();
+        File imgPath = new File(basePath + "/" + album + "/" + picture);
+        if(imgPath.exists()) {
+            FilePicture tmp = new FilePicture(imgPath);
+            return Response.ok(tmp.getData()).build();
         }
-        return null;
+        return Response.ok(new byte[1]).build();
     }
 
     @POST

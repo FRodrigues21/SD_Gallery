@@ -3,6 +3,7 @@ package sd.tp1.clt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import sd.tp1.gui.GalleryContentProvider;
 
@@ -70,13 +71,15 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
-		List<Album> lst = new ArrayList<>();
+		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
-            List<Album> tmp = e.getListOfAlbums();
-            if(tmp != null)
-			    lst.addAll(tmp);
+            List<String> tmp = e.getListOfAlbums();
+            if(tmp != null) {
+				lst.removeAll(tmp);
+				lst.addAll(tmp);
+			}
 		}
-		return lst;
+		return lst.stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
 	/**
@@ -86,13 +89,15 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
 		current_album = album;
-		List<Picture> lst = new ArrayList<>();
+		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
-			List<Picture> tmp = e.getListOfPictures(album);
-			if(tmp != null)
+			List<String> tmp = e.getListOfPictures(album);
+			if(tmp != null) {
+				lst.removeAll(tmp);
 				lst.addAll(tmp);
+			}
 		}
-		return lst;
+		return lst.stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
 	/**
@@ -104,13 +109,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		byte [] data;
 		for(Request e : discovery.getServers().values()) {
 			data = e.getPictureData(album, picture);
-			if(data != null)
+			if(data != null && data.length > 1)
 				return data;
 		}
 		return null;
 	}
 
-	/*
+	/**
 	 * Create a new album.
 	 * On error this method should return null.
 	 */

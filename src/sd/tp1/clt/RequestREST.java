@@ -34,23 +34,13 @@ public class RequestREST implements Request {
     }
 
     @Override
-    public List<GalleryContentProvider.Album> getListOfAlbums() {
-        List<GalleryContentProvider.Album> lst = new ArrayList<>();
-        List<String> tmp = target.path("/albums").request().accept(MediaType.APPLICATION_JSON).get(ArrayList.class);
-        for (String s: tmp) {
-            lst.add(new SharedAlbum(s));
-        }
-        return lst;
+    public List<String> getListOfAlbums() {
+        return target.path("/albums").request().accept(MediaType.APPLICATION_JSON).get(ArrayList.class);
     }
 
     @Override
-    public List<GalleryContentProvider.Picture> getListOfPictures(GalleryContentProvider.Album album) {
-        List<GalleryContentProvider.Picture> lst = new ArrayList<>();
-        List<String> tmp = target.path("/albums/" + album.getName()).request().accept(MediaType.APPLICATION_JSON).get(ArrayList.class);
-        for (String s: tmp) {
-            lst.add(new SharedPicture(s));
-        }
-        return lst;
+    public List<String> getListOfPictures(GalleryContentProvider.Album album) {
+        return target.path("/albums/" + album.getName()).request().accept(MediaType.APPLICATION_JSON).get(ArrayList.class);
     }
 
     @Override

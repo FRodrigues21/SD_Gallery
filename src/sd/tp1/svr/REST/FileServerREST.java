@@ -18,7 +18,7 @@ import java.net.URI;
  */
 public class FileServerREST {
 
-    private static String path = "./FileServer";
+    private static String basePath = "./FileServerREST";
     private static MulticastSocket server_socket = null;
     private static InetAddress server_address = null;
     private static int server_port = 9000;

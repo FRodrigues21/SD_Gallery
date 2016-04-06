@@ -9,9 +9,9 @@ import java.util.List;
  */
 public interface Request {
 
-    List<GalleryContentProvider.Album> getListOfAlbums();
+    List<String> getListOfAlbums();
 
-    List<GalleryContentProvider.Picture> getListOfPictures(GalleryContentProvider.Album album);
+    List<String> getListOfPictures(GalleryContentProvider.Album album);
 
     byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture);
 

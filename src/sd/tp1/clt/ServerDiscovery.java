@@ -54,7 +54,7 @@ public class ServerDiscovery implements Runnable{
                             String url = new String(reply.getData(), 0, reply.getLength());
                             System.err.println("FOUND: " + url);
                             if(!servers.containsKey(url) && url.contains("http")) {
-                                if (!url.contains("REST")) {
+                                if (url.contains("SOAP")) {
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestSOAP(url));
                                     gui.updateAlbums();
