@@ -120,8 +120,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		int server = (int)(Math.random() * discovery.getServers().size());
 		int cnt = 0;
 		for (Request e : discovery.getServers().values()) {
-			if(cnt == server)
-				return e.createAlbum(name);
+			if(cnt == server) {
+				Album album = e.createAlbum(name);
+				if(album.getName().equalsIgnoreCase(name))
+					return album;
+			}
 			cnt++;
 		}
 		return null;
@@ -135,7 +138,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		for(Request e : discovery.getServers().values()) {
 			e.deleteAlbum(album);
 		}
-		gui.updateAlbums(); // TODO: Checkar se isto é mesmo preciso
 	}
 	
 	/**
@@ -147,8 +149,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		int server = (int)(Math.random() * discovery.getServers().size());
 		int cnt = 0;
 		for (Request e : discovery.getServers().values()) {
-			if(cnt == server)
-				return e.uploadPicture(album, name, data);
+			if(cnt == server) {
+				Picture picture = e.uploadPicture(album, name, data);
+				if(picture.getName().equalsIgnoreCase(name))
+					return picture;
+			}
 			cnt++;
 		}
 		return null;

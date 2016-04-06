@@ -14,7 +14,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,8 +33,6 @@ public class SharedGalleryResource {
         System.err.printf("getListOfAlbums()\n");
         List<String> tmp = new ArrayList<>();
         List<FileAlbum> albums = Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && ! f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> new FileAlbum(f)).collect(Collectors.toList());
-        if(albums.size() == 0)
-            return Response.status(Status.NOT_FOUND).build();
         for (FileAlbum a : albums) {
             tmp.add(a.getName());
         }
@@ -41,13 +41,11 @@ public class SharedGalleryResource {
 
     @GET
     @Path("/{album}")
-    //@Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfPictures(@PathParam("album") String album) {
         File dirPath = new File(basePath + "/" + album);
         if(dirPath.exists()) {
             List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-            if(pictures.size() == 0)
-                return Response.status(Status.NOT_FOUND).build();
             List<String> tmp = new ArrayList<>();
             for(FilePicture p: pictures){
                 tmp.add(p.getName());
@@ -67,6 +65,58 @@ public class SharedGalleryResource {
             return Response.ok(pictures.get(0).getData()).build();
         }
         return null;
+    }
+
+    @POST
+    @Path("/new")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createAlbum(String album) {
+        File dirPath = new File(basePath + "/" + album);
+        if(!dirPath.exists()) {
+            dirPath.mkdir();
+            return Response.ok(album).build();
+        }
+        return Response.ok(null).build();
+    }
+
+    @DELETE
+    @Path("/{album}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteAlbum(@PathParam("album") String album) {
+        File dirPath = new File(basePath + "/" + album);
+        if(dirPath.exists()) {
+            dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
+            return Response.ok().build();
+        }
+        return Response.status(Status.NOT_FOUND).build();
+    }
+
+    @POST
+    @Path("/{album}/{picture}/new")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, byte [] data) {
+        File filePath = new File(basePath + "/" + album + "/" + picture);
+        if(!filePath.exists()) {
+            try {
+                Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
+                return Response.ok(picture).build();
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return Response.status(Status.NOT_FOUND).build();
+    }
+
+    @DELETE
+    @Path("/{album}/{picture}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture) {
+        File filePath = new File(basePath + "/" + album + "/" + picture);
+        if(filePath.exists()) {
+            filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+            return Response.ok(true).build();
+        }
+        return Response.ok(false).build();
     }
 
     static class FileAlbum implements GalleryContentProvider.Album {
