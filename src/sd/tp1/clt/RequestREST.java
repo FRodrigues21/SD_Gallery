@@ -49,8 +49,8 @@ public class RequestREST implements Request {
     }
 
     @Override
-    public GalleryContentProvider.Album createAlbum(String name) {
-        return new SharedAlbum(target.path("/albums/new").request().post(Entity.entity(name, MediaType.APPLICATION_JSON)).readEntity(String.class));
+    public String createAlbum(String name) {
+        return target.path("/albums/new").request().post(Entity.entity(name, MediaType.APPLICATION_JSON)).readEntity(String.class);
     }
 
     @Override
@@ -59,8 +59,8 @@ public class RequestREST implements Request {
     }
 
     @Override
-    public GalleryContentProvider.Picture uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
-        return new SharedPicture(target.path("/albums/" + album.getName() + "/" + name + "/new").request().post(Entity.entity(data, MediaType.APPLICATION_JSON)).readEntity(String.class));
+    public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
+        return target.path("/albums/" + album.getName() + "/" + name + "/new").request().post(Entity.entity(data, MediaType.APPLICATION_JSON)).readEntity(String.class);
     }
 
     @Override

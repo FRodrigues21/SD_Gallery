@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by franciscorodrigues on 04/04/16.
  */
-public class ServerDiscovery implements Runnable{
+public class SharedGalleryServerDiscovery implements Runnable{
 
     private Gui gui;
     private int client_port = 9000;
@@ -23,7 +23,7 @@ public class ServerDiscovery implements Runnable{
         return servers;
     }
 
-    public ServerDiscovery(Gui gui) {
+    public SharedGalleryServerDiscovery(Gui gui) {
         this.gui = gui;
     }
 

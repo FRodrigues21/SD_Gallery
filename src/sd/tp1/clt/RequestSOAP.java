@@ -4,7 +4,6 @@ import sd.tp1.clt.ws.*;
 import sd.tp1.gui.GalleryContentProvider;
 
 import java.net.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,11 +11,11 @@ import java.util.List;
  */
 public class RequestSOAP implements Request {
 
-    private FileServerSOAP server;
+    private SharedGalleryServerSOAP server;
 
     public RequestSOAP(String url) {
         try {
-            server = new FileServerSOAPService(new URL(url)).getFileServerSOAPPort();
+            server = new SharedGalleryServerSOAPService(new URL(url)).getSharedGalleryServerSOAPPort();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -36,16 +35,16 @@ public class RequestSOAP implements Request {
         return server.getPictureData(album.getName(), picture.getName());
     }
 
-    public GalleryContentProvider.Album createAlbum(String name) {
-        return new SharedAlbum(server.createAlbum(name));
+    public String createAlbum(String name) {
+        return server.createAlbum(name);
     }
 
     public void deleteAlbum(GalleryContentProvider.Album album) {
         server.deleteAlbum(album.getName());
     }
 
-    public GalleryContentProvider.Picture uploadPicture(GalleryContentProvider.Album album, String name, byte [] data) {
-        return new SharedPicture(server.uploadPicture(album.getName(), name, data));
+    public String uploadPicture(GalleryContentProvider.Album album, String name, byte [] data) {
+        return server.uploadPicture(album.getName(), name, data);
     }
 
     public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {

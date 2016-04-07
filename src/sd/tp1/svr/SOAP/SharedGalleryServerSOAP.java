@@ -1,23 +1,20 @@
 package sd.tp1.svr.SOAP;
 
-import sd.tp1.gui.GalleryContentProvider;
+import sd.tp1.svr.FileSystemUtilities;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.stream.Collectors;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
 @WebService
-public class FileServerSOAP {
+public class SharedGalleryServerSOAP {
 
     private File basePath;
 
@@ -27,88 +24,54 @@ public class FileServerSOAP {
     private static InetAddress server_address = null;
     private static int server_port = 9000;
 
-    public FileServerSOAP() {
+    public SharedGalleryServerSOAP() {
         this("./FileServerSOAP");
     }
 
-    public FileServerSOAP(String path) {
+    public SharedGalleryServerSOAP(String path) {
         super();
         basePath = new File(path);
     }
 
     @WebMethod
     public List<String> getListOfAlbums() {
-        List<String> tmp = new ArrayList<>();
-        List<FileAlbum> albums = Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && ! f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> new FileAlbum(f)).collect(Collectors.toList());
-        for (FileAlbum a : albums) {
-            tmp.add(a.getName());
-        }
-        return tmp;
+        return FileSystemUtilities.getDirectoriesFromPath(basePath);
     }
 
     @WebMethod
     public List<String> getListOfPictures(String album){
         File dirPath = new File(basePath + "/" + album);
-        if(dirPath.exists()) {
-            List<FilePicture> pictures = Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new FilePicture(f)).collect(Collectors.toList());
-            List<String> tmp = new ArrayList<>();
-            for(FilePicture p : pictures){
-                tmp.add(p.getName());
-            }
-            return tmp;
-        }
-        return null;
+        return FileSystemUtilities.getPicturesFromDirectory(dirPath);
     }
 
     @WebMethod
     public byte [] getPictureData(String album, String picture){
         File imgPath = new File(basePath + "/" + album + "/" + picture);
-        if(imgPath.exists()) {
-            FilePicture tmp = new FilePicture(imgPath);
-            return tmp.getData();
-        }
-        return null;
+        return FileSystemUtilities.getDataFromPicture(imgPath);
     }
 
     @WebMethod
     public String createAlbum(String album){
         File dirPath = new File(basePath + "/" + album);
-        if(!dirPath.exists()) {
-            dirPath.mkdir();
-            return album;
-        }
-        return null;
+        return FileSystemUtilities.createDirectory(dirPath);
     }
 
     @WebMethod
     public void deleteAlbum(String album){
         File dirPath = new File(basePath + "/" + album);
-        if(dirPath.exists())
-            dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
+        FileSystemUtilities.deleteDirectory(dirPath);
     }
 
     @WebMethod
     public String uploadPicture(String album, String picture, byte [] data){
         File filePath = new File(basePath + "/" + album + "/" + picture);
-        if(!filePath.exists()) {
-            try {
-                Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
-                return picture;
-            } catch (IOException e) {
-                return null;
-            }
-        }
-        return null;
+        return FileSystemUtilities.createPicture(filePath, data);
     }
 
     @WebMethod
     public Boolean deletePicture(String album, String picture){
         File filePath = new File(basePath + "/" + album + "/" + picture);
-        if(filePath.exists()) {
-            filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
-            return true;
-        }
-        return false;
+        return FileSystemUtilities.deletePicture(filePath);
     }
 
     private static void sendIPToClient(String reply, InetAddress client_address, int client_port) {
@@ -124,8 +87,8 @@ public class FileServerSOAP {
 
         // Get local address and publish
         String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServerSOAP";
-        Endpoint.publish(address_s, new FileServerSOAP(path));
-        System.err.println("FileServerSOAP: Started @ " + address_s);
+        Endpoint.publish(address_s, new SharedGalleryServerSOAP(path));
+        System.err.println("SharedGalleryServerSOAP: Started @ " + address_s);
 
         //Create a multicast socket
         server_address = InetAddress.getByName("224.1.2.3");
@@ -166,49 +129,5 @@ public class FileServerSOAP {
         r.start();
 
     }
-
-    static class FileAlbum implements GalleryContentProvider.Album {
-        final File dir;
-
-        FileAlbum(File dir) {
-            this.dir = dir;
-        }
-
-        @Override
-        public String getName() {
-            return dir.getName();
-        }
-    }
-
-    static class FilePicture implements GalleryContentProvider.Picture {
-        final File file;
-
-        FilePicture(File file) {
-            this.file = file;
-        }
-
-        @Override
-        public String getName() {
-            return file.getName();
-        }
-
-        byte[] getData() {
-            try {
-                return Files.readAllBytes(file.toPath());
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-    }
-
-    static boolean isPicture(File f) {
-        String filename = f.getName();
-        int i = filename.lastIndexOf('.');
-        String ext = i < 0 ? "" : filename.substring(i + 1).toLowerCase();
-        return f.isFile() && EXTENSIONS.contains(ext) && !filename.startsWith(".") && !filename.endsWith(".deleted");
-    }
-
-    static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg", "jpeg", "png" });
 
 }

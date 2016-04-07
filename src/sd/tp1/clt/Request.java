@@ -15,11 +15,11 @@ public interface Request {
 
     byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture);
 
-    GalleryContentProvider.Album createAlbum(String name);
+    String createAlbum(String name);
 
     void deleteAlbum(GalleryContentProvider.Album album);
 
-    GalleryContentProvider.Picture uploadPicture(GalleryContentProvider.Album album, String name, byte [] data);
+    String uploadPicture(GalleryContentProvider.Album album, String name, byte [] data);
 
     Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture);
 

@@ -3,10 +3,8 @@ package sd.tp1.svr.REST;
 import com.sun.net.httpserver.HttpServer;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import sd.tp1.svr.SOAP.FileServerSOAP;
 
 import javax.ws.rs.core.UriBuilder;
-import javax.xml.ws.Endpoint;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -16,7 +14,7 @@ import java.net.URI;
 /**
  * Created by franciscorodrigues on 05/04/16.
  */
-public class FileServerREST {
+public class SharedGalleryServerREST {
 
     private static String basePath = "./FileServerREST";
     private static MulticastSocket server_socket = null;

@@ -17,7 +17,7 @@ import sd.tp1.gui.Gui;
 public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	Gui gui;
-	ServerDiscovery discovery;
+	SharedGalleryServerDiscovery discovery;
 	Album current_album = null;
 
 	SharedGalleryContentProvider() { }
@@ -44,7 +44,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	public void findServers(Gui gui) throws IOException {
 		if(discovery == null) {
-			discovery = new ServerDiscovery(gui);
+			discovery = new SharedGalleryServerDiscovery(gui);
 			new Thread(discovery).start();
 		}
 	}
@@ -126,7 +126,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		int cnt = 0;
 		for (Request e : discovery.getServers().values()) {
 			if(cnt == server) {
-				Album album = e.createAlbum(name);
+				Album album = new SharedAlbum(e.createAlbum(name));
 				if(album.getName().equalsIgnoreCase(name))
 					return album;
 			}
@@ -155,7 +155,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		int cnt = 0;
 		for (Request e : discovery.getServers().values()) {
 			if(cnt == server) {
-				Picture picture = e.uploadPicture(album, name, data);
+				Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
 				if(picture.getName().equalsIgnoreCase(name))
 					return picture;
 			}
@@ -175,6 +175,38 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Represents a shared album.
+	 */
+	static class SharedAlbum implements GalleryContentProvider.Album {
+		final String name;
+
+		SharedAlbum(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+	}
+
+	/**
+	 * Represents a shared picture.
+	 */
+	static class SharedPicture implements GalleryContentProvider.Picture {
+		final String name;
+
+		SharedPicture(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
 	}
 
 }
