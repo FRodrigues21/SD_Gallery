@@ -29,7 +29,7 @@ public class FileSystemUtilities {
         File imgPath = new File(basePath + "/" + album + "/" + picture);
         if(imgPath.exists())
             return new FilePicture(imgPath).getData();
-        return new byte[1];
+        return null;
     }
 
     public static String createDirectory(File basePath, String album) {

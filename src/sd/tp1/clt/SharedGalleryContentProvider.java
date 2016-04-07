@@ -28,6 +28,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			{
 				while(true) {
 					try {
+						// TODO: Check if there are any albums changes
 						gui.updateAlbums();
 						if(current_album != null)
 							gui.updateAlbum(current_album);
@@ -36,7 +37,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						e.printStackTrace();
 					}
 				}
-
 			}
 		});
 		t.start();
@@ -71,6 +71,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
+		current_album = null;
 		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
             List<String> tmp = e.getListOfAlbums();
@@ -127,7 +128,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		for (Request e : discovery.getServers().values()) {
 			if(cnt == server) {
 				Album album = new SharedAlbum(e.createAlbum(name));
-				if(album.getName().equalsIgnoreCase(name))
+				if(album != null)
 					return album;
 			}
 			cnt++;

@@ -20,6 +20,8 @@ public class RequestREST implements Request {
     private Client client = null;
     private WebTarget target = null;
 
+    private static final int OK = Response.Status.OK.getStatusCode();
+
     public RequestREST(String url) {
         config = new ClientConfig();
         client = ClientBuilder.newClient(config);
@@ -32,39 +34,54 @@ public class RequestREST implements Request {
 
     @Override
     public List<String> getListOfAlbums() {
-        Response response = target.path("/albums").request().accept(MediaType.APPLICATION_JSON).get();
-        if(response.getStatus() == Response.Status.OK.getStatusCode())
+        Response response = target.request().accept(MediaType.APPLICATION_JSON).get();
+        if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
         return null;
     }
 
     @Override
     public List<String> getListOfPictures(GalleryContentProvider.Album album) {
-        return target.path("/albums/" + album.getName()).request().accept(MediaType.APPLICATION_JSON).get(ArrayList.class);
+        Response response = target.path(album.getName()).request().accept(MediaType.APPLICATION_JSON).get();
+        if(response.getStatus() == OK)
+            return response.readEntity(ArrayList.class);
+        return null;
     }
 
     @Override
     public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
-        return target.path("/albums/" + album.getName() + "/" + picture.getName()).request().accept(MediaType.APPLICATION_OCTET_STREAM).get(byte[].class);
+        Response response = target.path(album.getName() + "/" + picture.getName()).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
+        if(response.getStatus() == OK)
+            return response.readEntity(byte[].class);
+        return null;
     }
 
     @Override
     public String createAlbum(String name) {
-        return target.path("/albums/new").request().post(Entity.entity(name, MediaType.APPLICATION_JSON)).readEntity(String.class);
+        Response response = target.request().post(Entity.entity(name, MediaType.APPLICATION_JSON));
+        if(response.getStatus() == OK)
+            return response.readEntity(String.class);
+        return null;
     }
 
     @Override
     public void deleteAlbum(GalleryContentProvider.Album album) {
-        target.path("/albums/" + album.getName()).request().delete();
+        target.path(album.getName()).request().delete();
     }
 
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
-        return target.path("/albums/" + album.getName() + "/" + name + "/new").request().post(Entity.entity(data, MediaType.APPLICATION_JSON)).readEntity(String.class);
+        Response response = target.path(album.getName() + "/" + name).request().post(Entity.entity(data, MediaType.APPLICATION_JSON));
+        if(response.getStatus() == OK)
+            return response.readEntity(String.class);
+        return null;
     }
 
     @Override
     public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
-        return target.path("/albums/" + album.getName() + "/" + picture.getName()).request().delete().readEntity(Boolean.class);
+        Response response = target.path(album.getName() + "/" + picture.getName()).request().delete();
+        if(response.getStatus() == OK)
+            return response.readEntity(Boolean.class);
+        return false;
     }
 }

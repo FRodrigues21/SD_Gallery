@@ -34,7 +34,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
             e.printStackTrace();
         }
 
-        // Receives packets
+        // Receives packets with SERVER IP
         Thread r = new Thread(new Runnable() {
             @Override
             public void run()
@@ -72,7 +72,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
         });
         r.start();
 
-        // Sends packets
+        // Sends packets to Server
         Thread s = new Thread(new Runnable() {
             @Override
             public void run() {
