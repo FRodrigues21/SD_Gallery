@@ -28,32 +28,28 @@ public class SharedGalleryResource {
     @Path("/{album}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfPictures(@PathParam("album") String album) {
-        File dirPath = new File(basePath + "/" + album);
-        return Response.ok(FileSystemUtilities.getPicturesFromDirectory(dirPath)).build();
+        return Response.ok(FileSystemUtilities.getPicturesFromDirectory(basePath, album)).build();
     }
 
     @GET
     @Path("/{album}/{picture}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getPictureData(@PathParam("album") String album, @PathParam("picture") String picture) {
-        File imgPath = new File(basePath + "/" + album + "/" + picture);
-        return Response.ok(FileSystemUtilities.getDataFromPicture(imgPath)).build();
+        return Response.ok(FileSystemUtilities.getDataFromPicture(basePath, album, picture)).build();
     }
 
     @POST
     @Path("/new")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createAlbum(String album) {
-        File dirPath = new File(basePath + "/" + album);
-        return Response.ok(FileSystemUtilities.createDirectory(dirPath)).build();
+        return Response.ok(FileSystemUtilities.createDirectory(basePath, album)).build();
     }
 
     @DELETE
     @Path("/{album}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteAlbum(@PathParam("album") String album) {
-        File dirPath = new File(basePath + "/" + album);
-        FileSystemUtilities.deleteDirectory(dirPath);
+        FileSystemUtilities.deleteDirectory(basePath, album);
         return Response.ok().build();
     }
 
@@ -61,16 +57,14 @@ public class SharedGalleryResource {
     @Path("/{album}/{picture}/new")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, byte [] data) {
-        File filePath = new File(basePath + "/" + album + "/" + picture);
-        return Response.ok(FileSystemUtilities.createPicture(filePath, data)).build();
+        return Response.ok(FileSystemUtilities.createPicture(basePath, album, picture, data)).build();
     }
 
     @DELETE
     @Path("/{album}/{picture}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture) {
-        File filePath = new File(basePath + "/" + album + "/" + picture);
-        return Response.ok(FileSystemUtilities.deletePicture(filePath)).build();
+        return Response.ok(FileSystemUtilities.deletePicture(basePath, album, picture)).build();
     }
 
 }

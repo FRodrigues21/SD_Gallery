@@ -18,36 +18,41 @@ public class FileSystemUtilities {
         return null;
     }
 
-    public static List<String> getPicturesFromDirectory(File basePath) {
-       if(basePath.exists())
-           return Arrays.asList(basePath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new String(f.getName())).collect(Collectors.toList());
+    public static List<String> getPicturesFromDirectory(File basePath, String album) {
+        File dirPath = new File(basePath + "/" + album);
+       if(dirPath.exists())
+           return Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new String(f.getName())).collect(Collectors.toList());
        return null;
     }
 
-    public static byte [] getDataFromPicture(File basePath) {
-        if(basePath.exists())
-            return new FilePicture(basePath).getData();
+    public static byte [] getDataFromPicture(File basePath, String album, String picture) {
+        File imgPath = new File(basePath + "/" + album + "/" + picture);
+        if(imgPath.exists())
+            return new FilePicture(imgPath).getData();
         return new byte[1];
     }
 
-    public static String createDirectory(File basePath) {
-        if(!basePath.exists()) {
-            basePath.mkdir();
-            return new FileAlbum(basePath).getName();
+    public static String createDirectory(File basePath, String album) {
+        File dirPath = new File(basePath + "/" + album);
+        if(!dirPath.exists()) {
+            dirPath.mkdir();
+            return new FileAlbum(dirPath).getName();
         }
         return null;
     }
 
-    public static void deleteDirectory(File basePath) {
-        if(basePath.exists())
-            basePath.renameTo(new File(basePath.getAbsolutePath() + ".deleted"));
+    public static void deleteDirectory(File basePath, String album) {
+        File dirPath = new File(basePath + "/" + album);
+        if(dirPath.exists())
+            dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
     }
 
-    public static String createPicture(File basePath, byte [] data) {
-        if(!basePath.exists()) {
+    public static String createPicture(File basePath, String album, String picture, byte [] data) {
+        File filePath = new File(basePath + "/" + album + "/" + picture);
+        if(!filePath.exists()) {
             try {
-                Files.write(basePath.toPath(), data, StandardOpenOption.CREATE_NEW);
-                return new FilePicture(basePath).getName();
+                Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
+                return new FilePicture(filePath).getName();
             } catch (IOException e) {
                 return null;
             }
@@ -55,9 +60,10 @@ public class FileSystemUtilities {
         return null;
     }
 
-    public static Boolean deletePicture(File basePath) {
-        if(basePath.exists()) {
-            basePath.renameTo(new File(basePath.getAbsolutePath() + ".deleted"));
+    public static Boolean deletePicture(File basePath, String album, String picture) {
+        File filePath = new File(basePath + "/" + album + "/" + picture);
+        if(filePath.exists()) {
+            filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
             return true;
         }
         return false;

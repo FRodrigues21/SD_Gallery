@@ -34,38 +34,32 @@ public class SharedGalleryServerSOAP {
 
     @WebMethod
     public List<String> getListOfPictures(String album){
-        File dirPath = new File(basePath + "/" + album);
-        return FileSystemUtilities.getPicturesFromDirectory(dirPath);
+        return FileSystemUtilities.getPicturesFromDirectory(basePath, album);
     }
 
     @WebMethod
     public byte [] getPictureData(String album, String picture){
-        File imgPath = new File(basePath + "/" + album + "/" + picture);
-        return FileSystemUtilities.getDataFromPicture(imgPath);
+        return FileSystemUtilities.getDataFromPicture(basePath, album, picture);
     }
 
     @WebMethod
     public String createAlbum(String album){
-        File dirPath = new File(basePath + "/" + album);
-        return FileSystemUtilities.createDirectory(dirPath);
+        return FileSystemUtilities.createDirectory(basePath, album);
     }
 
     @WebMethod
     public void deleteAlbum(String album){
-        File dirPath = new File(basePath + "/" + album);
-        FileSystemUtilities.deleteDirectory(dirPath);
+        FileSystemUtilities.deleteDirectory(basePath, album);
     }
 
     @WebMethod
     public String uploadPicture(String album, String picture, byte [] data){
-        File filePath = new File(basePath + "/" + album + "/" + picture);
-        return FileSystemUtilities.createPicture(filePath, data);
+        return FileSystemUtilities.createPicture(basePath, album, picture, data);
     }
 
     @WebMethod
     public Boolean deletePicture(String album, String picture){
-        File filePath = new File(basePath + "/" + album + "/" + picture);
-        return FileSystemUtilities.deletePicture(filePath);
+        return FileSystemUtilities.deletePicture(basePath, album, picture);
     }
 
     public static void main(String args[]) throws Exception {
