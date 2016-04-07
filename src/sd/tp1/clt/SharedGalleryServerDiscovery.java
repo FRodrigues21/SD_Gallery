@@ -24,10 +24,14 @@ public class SharedGalleryServerDiscovery implements Runnable{
         this.gui = gui;
     }
 
+    public void removeServer(String address) {
+        servers.remove(address);
+    }
+
     public void run() {
 
         try {
-            client_address = InetAddress.getByName("224.1.2.3");
+            client_address = InetAddress.getByName("224.1.2.8");
             client_socket = new MulticastSocket();
         }
         catch (IOException e) {

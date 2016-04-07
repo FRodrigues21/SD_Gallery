@@ -6,6 +6,10 @@ import java.util.List;
 
 public interface Request {
 
+    int getTries();
+
+    String getAddress();
+
     List<String> getListOfAlbums();
 
     List<String> getListOfPictures(GalleryContentProvider.Album album);

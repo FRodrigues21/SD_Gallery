@@ -21,7 +21,7 @@ public class SharedGalleryClientDiscovery implements Runnable {
     public void run() {
 
         try {
-            server_address = InetAddress.getByName("224.1.2.3");
+            server_address = InetAddress.getByName("224.1.2.8");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

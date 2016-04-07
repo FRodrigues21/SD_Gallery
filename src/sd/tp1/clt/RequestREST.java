@@ -19,10 +19,14 @@ public class RequestREST implements Request {
     private ClientConfig config = null;
     private Client client = null;
     private WebTarget target = null;
+    private String url;
+    private int tries;
 
     private static final int OK = Response.Status.OK.getStatusCode();
 
     public RequestREST(String url) {
+        this.tries = 0;
+        this.url = url;
         config = new ClientConfig();
         client = ClientBuilder.newClient(config);
         target = client.target(getBaseURI(url));
@@ -32,8 +36,17 @@ public class RequestREST implements Request {
         return UriBuilder.fromUri(url).build();
     }
 
+    public int getTries() {
+        return tries++;
+    }
+
+    public String getAddress() {
+        return url;
+    }
+
     @Override
     public List<String> getListOfAlbums() {
+        System.out.println("FOI");
         Response response = target.request().accept(MediaType.APPLICATION_JSON).get();
         if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
@@ -71,7 +84,7 @@ public class RequestREST implements Request {
 
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
-        Response response = target.path(album.getName() + "/" + name).request().post(Entity.entity(data, MediaType.APPLICATION_JSON));
+        Response response = target.path(album.getName() + "/" + name).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
         if(response.getStatus() == OK)
             return response.readEntity(String.class);
         return null;

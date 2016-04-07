@@ -68,7 +68,7 @@ public class SharedGalleryServerREST {
 
     @POST
     @Path("/{album}/{picture}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, byte [] data) {
         if(picture.equalsIgnoreCase(FileSystemUtilities.createPicture(basePath, album, picture, data)))
