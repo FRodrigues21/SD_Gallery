@@ -8,6 +8,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.ArrayList;
@@ -31,7 +32,10 @@ public class RequestREST implements Request {
 
     @Override
     public List<String> getListOfAlbums() {
-        return target.path("/albums").request().accept(MediaType.APPLICATION_JSON).get(ArrayList.class);
+        Response response = target.path("/albums").request().accept(MediaType.APPLICATION_JSON).get();
+        if(response.getStatus() == Response.Status.OK.getStatusCode())
+            return response.readEntity(ArrayList.class);
+        return null;
     }
 
     @Override

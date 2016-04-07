@@ -12,6 +12,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.util.List;
 
 @Path("/albums")
 public class SharedGalleryResource {
@@ -21,7 +22,10 @@ public class SharedGalleryResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfAlbums() {
-        return Response.ok(FileSystemUtilities.getDirectoriesFromPath(basePath)).build();
+        List<String> lst = FileSystemUtilities.getDirectoriesFromPath(basePath);
+        if(lst != null)
+            return Response.ok(lst).build();
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @GET
