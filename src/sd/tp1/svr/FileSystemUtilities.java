@@ -10,9 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by franciscorodrigues on 07/04/16.
- */
 public class FileSystemUtilities {
 
     public static List<String> getDirectoriesFromPath(File basePath) {

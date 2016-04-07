@@ -6,9 +6,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 
-/**
- * Created by franciscorodrigues on 07/04/16.
- */
 public class SharedGalleryClientDiscovery implements Runnable {
 
     private String address_s;

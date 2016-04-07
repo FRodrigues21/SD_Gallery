@@ -4,9 +4,6 @@ import sd.tp1.gui.GalleryContentProvider;
 
 import java.util.List;
 
-/**
- * Created by franciscorodrigues on 04/04/16.
- */
 public interface Request {
 
     List<String> getListOfAlbums();

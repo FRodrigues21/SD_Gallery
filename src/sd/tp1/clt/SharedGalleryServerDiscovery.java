@@ -7,9 +7,6 @@ import java.net.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by franciscorodrigues on 04/04/16.
- */
 public class SharedGalleryServerDiscovery implements Runnable{
 
     private Gui gui;

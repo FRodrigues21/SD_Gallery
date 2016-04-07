@@ -9,9 +9,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.InetAddress;
 import java.net.URI;
 
-/**
- * Created by franciscorodrigues on 05/04/16.
- */
 public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
