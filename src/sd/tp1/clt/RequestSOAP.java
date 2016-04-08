@@ -1,5 +1,6 @@
 package sd.tp1.clt;
 
+import com.sun.xml.internal.ws.wsdl.parser.InaccessibleWSDLException;
 import sd.tp1.clt.ws.*;
 import sd.tp1.gui.GalleryContentProvider;
 
@@ -20,7 +21,7 @@ public class RequestSOAP implements Request {
         this.url = url;
         try {
             server = new SharedGalleryServerSOAPService(new URL(url)).getSharedGalleryServerSOAPPort();
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | InaccessibleWSDLException e) {
             e.printStackTrace();
         }
     }

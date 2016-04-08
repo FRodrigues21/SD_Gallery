@@ -49,7 +49,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                     byte [] buffer = new byte[65536];
                     reply = new DatagramPacket(buffer, buffer.length);
                     try {
-                        client_socket.setSoTimeout(1000);
+                        client_socket.setSoTimeout(5000);
                         client_socket.receive(reply);
                         if(reply.getLength() > 0) {
                             String url = new String(reply.getData(), 0, reply.getLength());

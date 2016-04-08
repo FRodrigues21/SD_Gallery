@@ -23,6 +23,7 @@ public class SharedGalleryServerREST {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfAlbums() {
+        System.out.println("GETALBUM REST");
         List<String> lst = FileSystemUtilities.getDirectoriesFromPath(basePath);
         if(lst != null)
             return Response.ok(lst).build();
@@ -89,7 +90,7 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST/").port(8090).build();
+        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST/").port(8090).build();
 
         System.err.println("SharedGalleryServerSOAP: Started @ " + baseUri.toString());
 

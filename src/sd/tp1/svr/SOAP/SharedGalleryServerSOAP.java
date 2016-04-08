@@ -29,6 +29,7 @@ public class SharedGalleryServerSOAP {
 
     @WebMethod
     public List<String> getListOfAlbums() {
+        System.out.println("GETALBUM SOAP");
         return FileSystemUtilities.getDirectoriesFromPath(basePath);
     }
 
@@ -65,7 +66,7 @@ public class SharedGalleryServerSOAP {
     public static void main(String args[]) throws Exception {
 
         // Get local address and publish
-        String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8080/FileServerSOAP/";
+        String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServerSOAP/";
 
         Endpoint.publish(address_s, new SharedGalleryServerSOAP(path));
         System.err.println("SharedGalleryServerSOAP: Started @ " + address_s);
