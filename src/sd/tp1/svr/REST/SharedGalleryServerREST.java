@@ -11,8 +11,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.URI;
+import java.net.*;
+import java.util.Enumeration;
 import java.util.List;
 
 @Path("/")
@@ -89,7 +89,7 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST/").port(8090).build();
+        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST/").port(8090).build();
 
         System.err.println("SharedGalleryServerSOAP: Started @ " + baseUri.toString());
 

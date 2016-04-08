@@ -4,8 +4,8 @@ import sd.tp1.svr.FileSystemUtilities;
 import sd.tp1.svr.SharedGalleryClientDiscovery;
 
 import java.io.File;
+import java.net.*;
 import java.util.*;
-import java.net.InetAddress;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -66,6 +66,7 @@ public class SharedGalleryServerSOAP {
 
         // Get local address and publish
         String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8080/FileServerSOAP/";
+
         Endpoint.publish(address_s, new SharedGalleryServerSOAP(path));
         System.err.println("SharedGalleryServerSOAP: Started @ " + address_s);
 

@@ -63,14 +63,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
-		boolean executed = false;
+		boolean executed = true;
 		current_album = null;
 		List<String> lst = new ArrayList<>();
-		if(current_albumlist.isEmpty() || checking_updates) {
 			System.err.println("CLIENT WARNING: RETRIEVING ALBUM LIST FROM SERVER!");
 			for (Request e : discovery.getServers().values()) {
-				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-					executed = false;
+				executed = false;
+				for(int i = 0; i < MAX_RETRIES && !executed; i++) {
 					List<String> tmp;
 					try {
 						tmp = e.getListOfAlbums();
@@ -84,18 +83,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 						if (e.getTries() == MAX_RETRIES + 1)
 							discovery.removeServer(e.getAddress());
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
 					}
 				}
 			}
-			current_albumlist = lst;
-		}
-		else
-			lst = current_albumlist;
+		current_albumlist = lst;
 		return lst.stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
@@ -109,8 +100,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		current_album = album;
 		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
+			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-				executed = false;
 				List<String> tmp;
 				try {
 					tmp = e.getListOfPictures(album);
@@ -123,11 +114,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 					if (e.getTries() == MAX_RETRIES + 1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(5000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
@@ -151,8 +137,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		else {
 			System.err.println("CLIENT WARNING: PICTURE NOT IN CACHE, RETRIEVING FROM SERVER");
 			for(Request e : discovery.getServers().values()) {
+				executed = false;
 				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-					executed = false;
 					try {
 						data = e.getPictureData(album, picture);
 						if (data != null && data.length > 1) {
@@ -164,11 +150,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 						if (e.getTries() == MAX_RETRIES + 1)
 							discovery.removeServer(e.getAddress());
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
 					}
 				}
 			}
@@ -187,7 +168,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		int server = (int)(Math.random() * discovery.getServers().size());
 		Request request = new ArrayList<>(discovery.getServers().values()).get(server);
 		for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-			executed = false;
 			try {
 				Album album = new SharedAlbum(request.createAlbum(name));
 				if (album != null)
@@ -197,11 +177,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 				if (request.getTries() == MAX_RETRIES + 1)
 					discovery.removeServer(request.getAddress());
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
 			}
 		}
 		return null;
@@ -214,8 +189,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public void deleteAlbum(Album album) {
 		boolean executed = false;
 		for(Request e : discovery.getServers().values()) {
+			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-				executed = false;
 				try {
 					e.deleteAlbum(album);
 					executed = true;
@@ -223,11 +198,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 					if (e.getTries() == MAX_RETRIES + 1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(5000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
@@ -241,8 +211,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public Picture uploadPicture(Album album, String name, byte [] data) {
 		boolean executed = false;
 		for(Request e : discovery.getServers().values()) {
+			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-				executed = false;
 				try {
 					Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
 					if (picture.getName().equalsIgnoreCase(name)) {
@@ -253,11 +223,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 					if (e.getTries() == MAX_RETRIES+1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(5000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
@@ -272,8 +237,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public boolean deletePicture(Album album, Picture picture) {
 		boolean executed = false;
 		for(Request e : discovery.getServers().values()) {
+			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-				executed = false;
 				try {
 					if(e.deletePicture(album, picture)) {
 						return true;
@@ -284,11 +249,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
 					if(e.getTries() == MAX_RETRIES+1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(5000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
@@ -310,6 +270,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 							lst_possible = getListOfAlbums().stream().map(f -> new String(f.getName())).collect(Collectors.toList());
 							checking_updates = false;
 							if(!listsAreEqual(lst_current, lst_possible)) {
+								System.out.println("DIFF!");
 								current_albumlist = lst_possible;
 								gui.updateAlbums();
 							}
@@ -319,6 +280,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 							lst_current = current_picturelist;
 							lst_possible = getListOfPictures(current_album).stream().map(f -> new String(f.getName())).collect(Collectors.toList());
 							if(!listsAreEqual(lst_current, lst_possible)) {
+								System.out.println("DIFF!");
 								current_picturelist = lst_possible;
 								gui.updateAlbum(current_album);
 							}
