@@ -58,12 +58,10 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                 if (url.contains("SOAP")) {
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestSOAP(url));
-                                    gui.updateAlbums();
                                 }
                                 else if(url.contains("REST")) {
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestREST(url));
-                                    gui.updateAlbums();
                                 }
                             }
                         }
