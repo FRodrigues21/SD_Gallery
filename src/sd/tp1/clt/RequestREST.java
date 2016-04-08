@@ -46,7 +46,6 @@ public class RequestREST implements Request {
 
     @Override
     public List<String> getListOfAlbums() {
-        System.out.println("FOI");
         Response response = target.request().accept(MediaType.APPLICATION_JSON).get();
         if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
