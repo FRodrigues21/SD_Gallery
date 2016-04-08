@@ -89,7 +89,7 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8090" + "/FileServerREST/";
+        String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8090" + "/FileServerREST/";
         System.err.println("FileServerREST: Started @ " + address_s);
         URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST/").port(8090).build();
 

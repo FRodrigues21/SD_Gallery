@@ -20,13 +20,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	SharedGalleryServerDiscovery discovery;
 
 	private int MAX_CACHE = 5;
+	private int MAX_RETRIES = 3;
 	private SharedGalleryContentCache<String, byte []> cache;
 
 	private Album current_album = null;
 	private List<String> current_picturelist = null;
 	private List<String> current_albumlist = null;
-
-	private int MAX_RETRIES = 3;
 
 	SharedGalleryContentProvider() {
 		cache = new SharedGalleryContentCache<>(MAX_CACHE);
