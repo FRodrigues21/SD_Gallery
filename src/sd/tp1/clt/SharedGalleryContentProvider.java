@@ -18,6 +18,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	Gui gui;
 
 	SharedGalleryServerDiscovery discovery;
+	private boolean checking_updates;
 
 	private int MAX_CACHE = 5;
 	private int MAX_RETRIES = 3;
@@ -92,22 +93,27 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public List<Picture> getListOfPictures(Album album) {
 		current_album = album;
 		List<String> lst = new ArrayList<>();
-		for(Request e : discovery.getServers().values()) {
-			List<String> tmp;
-			try {
-				tmp = e.getListOfPictures(album);
-				if(tmp != null) {
-					lst.removeAll(tmp);
-					lst.addAll(tmp);
+		if(current_albumlist.isEmpty() || checking_updates) {
+			for(Request e : discovery.getServers().values()) {
+				List<String> tmp;
+				try {
+					tmp = e.getListOfPictures(album);
+					if(tmp != null) {
+						lst.removeAll(tmp);
+						lst.addAll(tmp);
+					}
+				}
+				catch (RuntimeException ex) {
+					System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
+					if(e.getTries() == MAX_RETRIES)
+						discovery.removeServer(e.getAddress());
 				}
 			}
-			catch (RuntimeException ex) {
-				System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
-				if(e.getTries() == MAX_RETRIES)
-					discovery.removeServer(e.getAddress());
-			}
+			current_picturelist = lst;
 		}
-		current_picturelist = lst;
+		else {
+			lst = current_albumlist;
+		}
 		return lst.stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
@@ -234,7 +240,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						// User is viewing the album list
 						if(current_album == null) {
 							lst_current = current_albumlist;
+							checking_updates = true;
 							lst_possible = getListOfAlbums().stream().map(f -> new String(f.getName())).collect(Collectors.toList());
+							checking_updates = false;
 							if(!listsAreEqual(lst_current, lst_possible)) {
 								current_albumlist = lst_possible;
 								gui.updateAlbums();
