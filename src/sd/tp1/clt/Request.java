@@ -4,6 +4,10 @@ import sd.tp1.gui.GalleryContentProvider;
 
 import java.util.List;
 
+/**
+ * Francisco Rodrigues 42727
+ * Luis Abreu 43322
+ */
 public interface Request {
 
     int getTries();

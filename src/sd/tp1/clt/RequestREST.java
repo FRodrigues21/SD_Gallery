@@ -14,6 +14,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Francisco Rodrigues 42727
+ * Luis Abreu 43322
+ */
 public class RequestREST implements Request {
 
     private ClientConfig config = null;

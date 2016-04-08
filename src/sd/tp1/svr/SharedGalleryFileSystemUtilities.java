@@ -10,7 +10,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FileSystemUtilities {
+/**
+ * Francisco Rodrigues 42727
+ * Luis Abreu 43322
+ */
+public class SharedGalleryFileSystemUtilities {
 
     public static List<String> getDirectoriesFromPath(File basePath) {
         if(basePath.exists())

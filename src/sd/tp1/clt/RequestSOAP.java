@@ -8,7 +8,8 @@ import java.net.*;
 import java.util.List;
 
 /**
- * Created by franciscorodrigues on 03/04/16.
+ * Francisco Rodrigues 42727
+ * Luis Abreu 43322
  */
 public class RequestSOAP implements Request {
 
@@ -22,7 +23,7 @@ public class RequestSOAP implements Request {
         try {
             server = new SharedGalleryServerSOAPService(new URL(url)).getSharedGalleryServerSOAPPort();
         } catch (MalformedURLException | InaccessibleWSDLException e) {
-            e.printStackTrace();
+            System.out.println("BAD URL or INACCESSIBLE");
         }
     }
 

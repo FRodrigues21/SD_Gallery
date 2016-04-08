@@ -6,8 +6,9 @@ import sd.tp1.gui.impl.GalleryWindow;
 
 import java.io.IOException;
 
-/*
- * Launches the local shared gallery application.
+/**
+ * Francisco Rodrigues 42727
+ * Luis Abreu 43322
  */
 public class SharedGallery extends Application {
 

@@ -4,7 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Created by franciscorodrigues on 08/04/16.
+ * Francisco Rodrigues 42727
+ * Luis Abreu 43322
  */
 public class SharedGalleryContentCache<K,V> extends LinkedHashMap<K,V> {
 
