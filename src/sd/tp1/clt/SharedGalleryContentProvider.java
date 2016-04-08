@@ -1,12 +1,8 @@
 package sd.tp1.clt;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import sd.tp1.gui.GalleryContentProvider;
 
@@ -20,15 +16,20 @@ import sd.tp1.gui.Gui;
 public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	Gui gui;
+
 	SharedGalleryServerDiscovery discovery;
 
-	Album current_album = null;
-	List<String> current_picturelist = null;
-	List<String> current_albumlist = null;
+	private int MAX_CACHE = 5;
+	private SharedGalleryContentCache<String, byte []> cache;
+
+	private Album current_album = null;
+	private List<String> current_picturelist = null;
+	private List<String> current_albumlist = null;
 
 	private int MAX_RETRIES = 3;
 
 	SharedGalleryContentProvider() {
+		cache = new SharedGalleryContentCache<>(MAX_CACHE);
 		current_albumlist = new ArrayList<>();
 		current_picturelist = new ArrayList<>();
 	}
@@ -117,11 +118,20 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public byte[] getPictureData(Album album, Picture picture) {
 		byte [] data;
+
+		if(cache != null && cache.containsKey(album.getName() + "_" + picture.getName())) {
+			System.err.println("CLIENT WARNING: RETRIEVING PICTURE FROM CACHE");
+			return cache.get(album.getName() + "_" + picture.getName());
+		}
+
+		System.err.println("CLIENT WARNING: PICTURE NOT IN CACHE, RETRIEVING FROM SERVER");
 		for(Request e : discovery.getServers().values()) {
 			try {
 				data = e.getPictureData(album, picture);
-				if(data != null && data.length > 1)
+				if(data != null && data.length > 1) {
+					cache.put(album.getName() + '_' + picture.getName(), data);
 					return data;
+				}
 			}
 			catch (RuntimeException ex) {
 				System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
@@ -180,8 +190,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		for(Request e : discovery.getServers().values()) {
 			try {
 				Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
-				if(picture.getName().equalsIgnoreCase(name))
+				if(picture.getName().equalsIgnoreCase(name)) {
 					return picture;
+				}
 			}
 			catch (RuntimeException ex) {
 				System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
@@ -247,9 +258,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private Boolean listsAreEqual(List<String> lst1, List<String> lst2) {
 		Collections.sort(lst1);
 		Collections.sort(lst2);
-		if(lst1.size() != lst2.size() || !lst1.equals(lst2)) {
+		if(lst1.size() != lst2.size() || !lst1.equals(lst2))
 			return false;
-		}
 		else
 			return true;
 	}
@@ -284,6 +294,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		public String getName() {
 			return name;
 		}
+
 	}
 
 }

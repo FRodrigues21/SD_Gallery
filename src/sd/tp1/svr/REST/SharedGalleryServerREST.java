@@ -72,7 +72,7 @@ public class SharedGalleryServerREST {
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, byte [] data) {
         if(picture.equalsIgnoreCase(FileSystemUtilities.createPicture(basePath, album, picture, data)))
-            return Response.ok(true).build();
+            return Response.ok(picture).build();
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
