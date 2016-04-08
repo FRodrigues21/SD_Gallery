@@ -64,18 +64,19 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public List<Album> getListOfAlbums() {
 		current_album = null;
 		List<String> lst = new ArrayList<>();
-		for(Request e : discovery.getServers().values()) {
+		System.err.println("CLIENT WARNING: RETRIEVING ALBUM LIST FROM SERVER!");
+		for (Request e : discovery.getServers().values()) {
 			List<String> tmp;
 			try {
 				tmp = e.getListOfAlbums();
-				if(tmp != null) {
+				if (tmp != null) {
 					lst.removeAll(tmp);
 					lst.addAll(tmp);
 				}
 			}
-            catch (RuntimeException ex) {
+			catch (RuntimeException ex) {
 				System.err.println("CLIENT ERROR: Couldn't connect to server, trying to remove server from list.");
-				if(e.getTries() == MAX_RETRIES)
+				if (e.getTries() == MAX_RETRIES)
 					discovery.removeServer(e.getAddress());
 			}
 		}
@@ -234,15 +235,19 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						if(current_album == null) {
 							lst_current = current_albumlist;
 							lst_possible = getListOfAlbums().stream().map(f -> new String(f.getName())).collect(Collectors.toList());
-							if(!listsAreEqual(lst_current, lst_possible))
+							if(!listsAreEqual(lst_current, lst_possible)) {
 								current_albumlist = lst_possible;
+								gui.updateAlbums();
+							}
 						}
 						// User is inside an album
 						else {
 							lst_current = current_picturelist;
 							lst_possible = getListOfPictures(current_album).stream().map(f -> new String(f.getName())).collect(Collectors.toList());
-							if(!listsAreEqual(lst_current, lst_possible))
+							if(!listsAreEqual(lst_current, lst_possible)) {
 								current_picturelist = lst_possible;
+								gui.updateAlbum(current_album);
+							}
 						}
 						Thread.sleep(10000);
 					} catch (InterruptedException e) {

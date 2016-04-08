@@ -15,8 +15,7 @@ public class SharedGalleryContentCache<K,V> extends LinkedHashMap<K,V> {
         this.capacity = capacity;
     }
 
-    protected boolean removeEldestEntry(Map.Entry eldest)
-    {
+    protected boolean removeEldestEntry(Map.Entry eldest) {
         return size() > capacity;
     }
 

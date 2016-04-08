@@ -89,8 +89,6 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8090" + "/FileServerREST/";
-        System.err.println("FileServerREST: Started @ " + address_s);
         URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST/").port(8090).build();
 
         ResourceConfig config = new ResourceConfig();
@@ -99,10 +97,10 @@ public class SharedGalleryServerREST {
 
         HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, config);
 
-        System.err.println("REST Server ready... ");
+        System.err.println("** REST SERVER READY **");
 
         // Receives
-        Thread r = new Thread(new SharedGalleryClientDiscovery(address_s));
+        Thread r = new Thread(new SharedGalleryClientDiscovery(baseUri.toString()));
         r.start();
     }
 
