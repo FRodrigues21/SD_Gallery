@@ -91,6 +91,8 @@ public class SharedGalleryServerREST {
 
         URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST/").port(8090).build();
 
+        System.err.println("SharedGalleryServerSOAP: Started @ " + baseUri.toString());
+
         ResourceConfig config = new ResourceConfig();
 
         config.register(SharedGalleryServerREST.class);
