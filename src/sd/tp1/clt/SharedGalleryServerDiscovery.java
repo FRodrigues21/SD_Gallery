@@ -11,19 +11,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SharedGalleryServerDiscovery implements Runnable{
 
-    private int client_port = 9000;
-    private InetAddress client_address = null;
-    private MulticastSocket client_socket = null;
+    private String client_multicast = "224.1.2.8"; // Multicast IP
+    private int client_port = 9000; // Multicast Port
+    private InetAddress client_address = null; // Client address
+    private MulticastSocket client_socket = null; // Socket Multicast
 
-    private Map<String,Request> servers = new ConcurrentHashMap<>();
+    private Map<String,Request> servers = new ConcurrentHashMap<>(); // Map containing servers where the key is the server address and the value an object that handles the requests
 
-    public SharedGalleryServerDiscovery() {
-    }
+    public SharedGalleryServerDiscovery() { }
 
+    /**
+     * Get the map of servers
+     * @return the map of servers
+     */
     public Map<String,Request> getServers() {
         return servers;
     }
 
+    /**
+     * Removes server with a certain address
+     * @param address - Address of a server
+     */
     public void removeServer(String address) {
         servers.remove(address);
     }
@@ -31,14 +39,14 @@ public class SharedGalleryServerDiscovery implements Runnable{
     public void run() {
 
         try {
-            client_address = InetAddress.getByName("224.1.2.8");
+            client_address = InetAddress.getByName(client_multicast);
             client_socket = new MulticastSocket();
         }
         catch (IOException e) {
             System.exit(1);
         }
 
-        // Receives packets with SERVER IP
+        // Receives packets from servers/clients that are a FileServer
         Thread r = new Thread(() -> {
             while(true) {
                 DatagramPacket reply;
@@ -67,7 +75,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
         });
         r.start();
 
-        // Sends packets to Server
+        // Sends packets to multicast asking who is a FileServer
         Thread s = new Thread(() -> {
                 while (true) {
                     try {

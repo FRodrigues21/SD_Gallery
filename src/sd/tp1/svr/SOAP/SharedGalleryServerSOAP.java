@@ -22,6 +22,10 @@ public class SharedGalleryServerSOAP {
 
     public SharedGalleryServerSOAP() { }
 
+    /**
+     * The methods from this class act the same way as the ones from REQUEST interface
+     */
+
     @WebMethod
     public List<String> getListOfAlbums() {
         return SharedGalleryFileSystemUtilities.getDirectoriesFromPath(basePath);

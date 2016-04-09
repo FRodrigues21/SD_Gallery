@@ -20,30 +20,23 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	SharedGalleryServerDiscovery discovery;
 
-	private long REFRESH_TIME = 5000;
-	private long RETRY_TIME = 5000;
-	private int MAX_RETRIES = 3;
+	private long REFRESH_TIME = 5000; // Time between refresh
+	private long RETRY_TIME = 5000; // Time between trying to run the method again
+	private int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
 
-	private int MAX_CACHE_CAPACITY = 8; // In number of entries
-	private int MAX_CACHE_TIME = 2; // In minutes
+	private int MAX_CACHE_CAPACITY = 8; // Cache maximum number of entries
+	private int MAX_CACHE_TIME = 2; // Cache maximum time in minutes
 
 	private SharedGalleryContentCache<String, SharedPicture> cache;
 
-	private Album current_album = null;
-	private List<String> current_picturelist = null;
-	private List<String> current_albumlist = null;
+	private Album current_album = null; // Album being viewed by the client
+	private List<String> current_picturelist = null; // Current pictures list (kinda a cache)
+	private List<String> current_albumlist = null; // Current album list (kinda a cache)
 
 	SharedGalleryContentProvider() {
 		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
 		current_albumlist = new ArrayList<>();
 		current_picturelist = new ArrayList<>();
-	}
-
-	public void findServers() throws IOException {
-		if(discovery == null) {
-			discovery = new SharedGalleryServerDiscovery();
-			new Thread(discovery).start();
-		}
 	}
 
 	/**
@@ -54,8 +47,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		if(this.gui == null) {
 			this.gui = gui;
 			try {
-				findServers();
-				detectChanges();
+				findServers(); // Finds servers
+				detectChanges(); // Detects changes
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -312,6 +305,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		return false;
 	}
 
+	/**
+	 * Thread that runs along with the client checking if there are any changes in the albums or pictures list
+	 */
 	private void detectChanges() {
 		Thread t = new Thread(() -> {
             while(true) {
@@ -319,7 +315,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
                     List<String> lst_current;
                     List<String> lst_possible;
 
-					// Viewing albums so try to update albums
+					// Viewing albums so try to update albums (if there are changes)
 					lst_current = current_albumlist;
 					lst_possible = getListOfAlbums().stream().map(f -> f.getName()).collect(Collectors.toList());
 					if(!listsAreEqual(lst_current, lst_possible)) {
@@ -327,7 +323,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						gui.updateAlbums();
 					}
 
-					// Update last album viewed
+					// Viewing an album so try to update pictures (if there are changes)
 					if(current_album != null) {
 						lst_current = current_picturelist;
 						lst_possible = getListOfPictures(current_album).stream().map(f -> f.getName()).collect(Collectors.toList());
@@ -346,6 +342,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		t.start();
 	}
 
+	/**
+	 * Sorts the lists and checks if the lists are equal
+	 * @param lst1 - String list
+	 * @param lst2 - String list
+     * @return true if the lists are equal in size and elements or false otherwise
+     */
 	private Boolean listsAreEqual(List<String> lst1, List<String> lst2) {
 		if(lst1 == null | lst2 == null)
 			return false;
@@ -354,9 +356,26 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		return !(lst1.size() != lst2.size() || !lst1.equals(lst2));
 	}
 
+	/**
+	 * Computes the time between two dates in time
+	 * @param time1 - First date
+	 * @param time2 - Second date
+     * @return the number of minutes between time1 and time2
+     */
 	private double timeBetween(long time1, long time2) {
 		long result = time2 - time1;
 		return TimeUnit.MILLISECONDS.toMinutes(result);
+	}
+
+	/**
+	 * Thread that runs along with the client and finds new ShareGalleryServers
+	 * @throws IOException- In case the thread can't be created
+     */
+	public void findServers() throws IOException {
+		if(discovery == null) {
+			discovery = new SharedGalleryServerDiscovery();
+			new Thread(discovery).start();
+		}
 	}
 
 	/**

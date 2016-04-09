@@ -16,12 +16,23 @@ import java.util.stream.Collectors;
  */
 public class SharedGalleryFileSystemUtilities {
 
+    /**
+     *
+     * @param basePath - Path of a direcoty root
+     * @return a list containing the names of the directories from basePath
+     */
     public static List<String> getDirectoriesFromPath(File basePath) {
         if(basePath.exists() && basePath.isDirectory())
             return Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && !f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> new String(f.getName())).collect(Collectors.toList());
         return null;
     }
 
+    /**
+     *
+     * @param basePath - Path of a directory root
+     * @param album - Name of the directory
+     * @return a list containing the names of the pictures from the directory album from basePath
+     */
     public static List<String> getPicturesFromDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
         if(dirPath.exists() && dirPath.isDirectory())
@@ -29,6 +40,13 @@ public class SharedGalleryFileSystemUtilities {
        return null;
     }
 
+    /**
+     *
+     * @param basePath - Path of a root directory
+     * @param album - Name of the directory
+     * @param picture - Name of the picture
+     * @return the data of the picture from the directory album from basePath or null
+     */
     public static byte [] getDataFromPicture(File basePath, String album, String picture) {
         File filePath = new File(basePath + "/" + album + "/" + picture);
         if(filePath.exists() && filePath.isFile())
@@ -36,6 +54,12 @@ public class SharedGalleryFileSystemUtilities {
         return null;
     }
 
+    /**
+     * Creates a new directory with a certain name in a certain path
+     * @param basePath - Path of a root directory
+     * @param album - Name of the directory
+     * @return the name of the directory if was created or null otherwise
+     */
     public static String createDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
         if(!dirPath.exists()) {
@@ -45,6 +69,12 @@ public class SharedGalleryFileSystemUtilities {
         return null;
     }
 
+    /**
+     * Deletes a directory with a certain name from a certain path
+     * @param basePath - Path of a root directory
+     * @param album - Name of the directory
+     * @return true if the directory was deleted or false otherwise
+     */
     public static Boolean deleteDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
         if (dirPath.exists() && dirPath.isDirectory()) {
@@ -54,6 +84,14 @@ public class SharedGalleryFileSystemUtilities {
         return false;
     }
 
+    /**
+     * Creates a new picture in a certain directory in a certain path
+     * @param basePath - Path of a root directory
+     * @param album - Name of the directory
+     * @param picture - Name of the picture
+     * @param data - Bytes containing the data of the picture
+     * @return the name of the picture if it was created or null otherwise
+     */
     public static String createPicture(File basePath, String album, String picture, byte [] data) {
         File filePath = new File(basePath + "/" + album + "/" + picture);
         if(!filePath.exists()) {
@@ -67,6 +105,13 @@ public class SharedGalleryFileSystemUtilities {
         return null;
     }
 
+    /**
+     * Deletes a picture in a certain directoru in a certain path
+     * @param basePath - Path of a root directory
+     * @param album - Name of the directory
+     * @param picture - Name of the picture
+     * @return true if the pictures was deleted or false otherwise
+     */
     public static Boolean deletePicture(File basePath, String album, String picture) {
         File filePath = new File(basePath + "/" + album + "/" + picture);
         if(filePath.exists() && filePath.isFile()) {

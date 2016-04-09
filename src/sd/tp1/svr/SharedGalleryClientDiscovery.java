@@ -12,10 +12,12 @@ import java.net.UnknownHostException;
  */
 public class SharedGalleryClientDiscovery implements Runnable {
 
-    private String address_s;
-    private int server_port = 9000;
-    private MulticastSocket server_socket = null;
-    private InetAddress server_address = null;
+    private String address_s; // Server address
+    private String server_multicast = "224.1.2.8"; // Multicast IP
+    private int server_port = 9000; // Multicast Port
+    private InetAddress server_address = null; // Server address
+    private MulticastSocket server_socket = null; // Multicast Socket
+
 
     public SharedGalleryClientDiscovery(String address_s) {
         this.address_s = address_s;
@@ -25,7 +27,7 @@ public class SharedGalleryClientDiscovery implements Runnable {
     public void run() {
 
         try {
-            server_address = InetAddress.getByName("224.1.2.8");
+            server_address = InetAddress.getByName(server_multicast);
             if (!server_address.isMulticastAddress())
                 System.exit(1);
             server_socket = new MulticastSocket(server_port);
@@ -36,6 +38,7 @@ public class SharedGalleryClientDiscovery implements Runnable {
             System.exit(1);
         }
 
+        // Waits for packets containing FileServer question and replies with IP address
         while(true) {
             try {
                 byte [] buffer = new byte[65536];
@@ -55,6 +58,7 @@ public class SharedGalleryClientDiscovery implements Runnable {
         }
     }
 
+    // Send server IP Address to client
     private void sendIPToClient(String reply, InetAddress client_address, int client_port) {
         DatagramPacket p = new DatagramPacket(reply.getBytes(), reply.getBytes().length, client_address, client_port);
         try {

@@ -21,7 +21,11 @@ import java.util.List;
 @Path("/")
 public class SharedGalleryServerREST {
 
-    private static File basePath = new File("./FileServerREST");
+    private static File basePath = new File("./FileServerREST"); // Path where the server files are
+
+    /**
+     * The methods from this class act the same way as the ones from REQUEST interface, but instead of null return an error status code
+     */
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
