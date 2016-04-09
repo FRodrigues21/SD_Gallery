@@ -101,7 +101,7 @@ public class SharedGalleryServerREST {
         if(!basePath.exists())
             basePath.mkdir();
 
-        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST").port(8090).build();
+        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(8090).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerREST.class);
 
