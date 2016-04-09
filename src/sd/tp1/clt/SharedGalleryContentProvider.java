@@ -22,9 +22,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private long REFRESH_TIME = 5000;
 	private long RETRY_TIME = 5000;
+	private int MAX_RETRIES = 3;
+
 	private int MAX_CACHE_CAPACITY = 8; // In number of entries
 	private int MAX_CACHE_TIME = 2; // In minutes
-	private int MAX_RETRIES = 3;
+
 	private SharedGalleryContentCache<String, SharedPicture> cache;
 
 	private Album current_album = null;
@@ -101,8 +103,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		if(discovery.getServers().isEmpty())
-			return null;
 		current_album = album;
 		boolean executed;
 		List<String> lst = new ArrayList<>();
@@ -149,6 +149,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			return cache.get(album.getName() + "_" + picture.getName()).getData();
 		}
 		else {
+
+			// Safe delete picture from cache
+			if(cache.containsKey(key))
+				cache.remove(key);
+
+			// Retrieve cache again
 			for(Request e : discovery.getServers().values()) {
 				executed = false;
 				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
@@ -218,7 +224,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public void deleteAlbum(Album album) {
 		boolean executed;
-		if(current_album != null && current_album.getName().equalsIgnoreCase(album.getName()))
+		if((current_album != null && current_album.getName().equalsIgnoreCase(album.getName())))
 			current_album = null;
 		for(Request e : discovery.getServers().values()) {
 			executed = false;
@@ -246,7 +252,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public Picture uploadPicture(Album album, String name, byte [] data) {
-		if(current_picturelist.contains(name))
+		if(current_picturelist.contains(name) || discovery.getServers().isEmpty())
 			return null;
 		boolean executed;
 		for(Request e : discovery.getServers().values()) {
@@ -280,6 +286,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
 		boolean executed;
+		if(discovery.getServers().isEmpty())
+			return false;
 		for(Request e : discovery.getServers().values()) {
 			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
