@@ -22,7 +22,7 @@ public interface Request {
 
     String createAlbum(String name);
 
-    void deleteAlbum(GalleryContentProvider.Album album);
+    Boolean deleteAlbum(GalleryContentProvider.Album album);
 
     String uploadPicture(GalleryContentProvider.Album album, String name, byte [] data);
 

@@ -51,8 +51,8 @@ public class RequestSOAP implements Request {
         return server.createAlbum(name);
     }
 
-    public void deleteAlbum(GalleryContentProvider.Album album) throws RuntimeException {
-        server.deleteAlbum(album.getName());
+    public Boolean deleteAlbum(GalleryContentProvider.Album album) throws RuntimeException {
+        return server.deleteAlbum(album.getName());
     }
 
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte [] data) throws RuntimeException {

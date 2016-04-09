@@ -88,12 +88,15 @@ public interface SharedGalleryServerSOAP {
     /**
      * 
      * @param arg0
+     * @return
+     *     returns java.lang.Boolean
      */
     @WebMethod
+    @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "deleteAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.DeleteAlbum")
     @ResponseWrapper(localName = "deleteAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.DeleteAlbumResponse")
     @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/deleteAlbumRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/deleteAlbumResponse")
-    public void deleteAlbum(
+    public Boolean deleteAlbum(
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0);
 

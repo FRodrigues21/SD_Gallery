@@ -81,8 +81,11 @@ public class RequestREST implements Request {
     }
 
     @Override
-    public void deleteAlbum(GalleryContentProvider.Album album) {
-        target.path(album.getName()).request().delete();
+    public Boolean deleteAlbum(GalleryContentProvider.Album album) {
+        Response response = target.path(album.getName()).request().delete();
+        if(response.getStatus() == OK)
+            return response.readEntity(Boolean.class);
+        return false;
     }
 
     @Override

@@ -18,18 +18,9 @@ import javax.xml.ws.Endpoint;
 @WebService
 public class SharedGalleryServerSOAP {
 
-    private File basePath;
+    private static File basePath = new File("./FileServerSOAP");
 
-    private static String path = "./FileServerSOAP";
-
-    public SharedGalleryServerSOAP() {
-        this("./FileServerSOAP");
-    }
-
-    public SharedGalleryServerSOAP(String path) {
-        super();
-        basePath = new File(path);
-    }
+    public SharedGalleryServerSOAP() { }
 
     @WebMethod
     public List<String> getListOfAlbums() {
@@ -37,40 +28,43 @@ public class SharedGalleryServerSOAP {
     }
 
     @WebMethod
-    public List<String> getListOfPictures(String album){
+    public List<String> getListOfPictures(String album) {
         return SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
     }
 
     @WebMethod
-    public byte [] getPictureData(String album, String picture){
+    public byte [] getPictureData(String album, String picture) {
         return SharedGalleryFileSystemUtilities.getDataFromPicture(basePath, album, picture);
     }
 
     @WebMethod
-    public String createAlbum(String album){
+    public String createAlbum(String album) {
         return SharedGalleryFileSystemUtilities.createDirectory(basePath, album);
     }
 
     @WebMethod
-    public void deleteAlbum(String album){
-        SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+    public Boolean deleteAlbum(String album){
+        return SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
     }
 
     @WebMethod
-    public String uploadPicture(String album, String picture, byte [] data){
+    public String uploadPicture(String album, String picture, byte [] data) {
         return SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
     }
 
     @WebMethod
-    public Boolean deletePicture(String album, String picture){
+    public Boolean deletePicture(String album, String picture) {
         return SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
     }
 
     public static void main(String args[]) throws Exception {
 
+        if(!basePath.exists())
+            basePath.mkdir();
+
         // Get local address and publish
-        String address_s = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8080/FileServerSOAP/";
-        Endpoint.publish(address_s, new SharedGalleryServerSOAP(path));
+        String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8080/FileServerSOAP";
+        Endpoint.publish(address_s, new SharedGalleryServerSOAP());
 
         System.err.println("SharedGalleryServerSOAP: Started @ " + address_s);
 

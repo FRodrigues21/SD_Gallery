@@ -21,7 +21,7 @@ import java.util.List;
 @Path("/")
 public class SharedGalleryServerREST {
 
-    private File basePath = new File("./FileServerREST");
+    private static File basePath = new File("./FileServerREST");
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -54,9 +54,12 @@ public class SharedGalleryServerREST {
     @DELETE
     @Path("/{album}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response deleteAlbum(@PathParam("album") String album) {
-        SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
-        return Response.ok().build();
+        boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+        if(created)
+            return Response.ok(created).build();
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @GET
@@ -81,7 +84,6 @@ public class SharedGalleryServerREST {
 
     @DELETE
     @Path("/{album}/{picture}")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture) {
         Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
@@ -92,7 +94,10 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST/").port(8090).build();
+        if(!basePath.exists())
+            basePath.mkdir();
+
+        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getCanonicalHostName() + "/FileServerREST").port(8090).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerREST.class);
 

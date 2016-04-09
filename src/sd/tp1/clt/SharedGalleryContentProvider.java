@@ -1,7 +1,9 @@
 package sd.tp1.clt;
 
 import java.io.IOException;
+import java.security.Timestamp;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import sd.tp1.gui.GalleryContentProvider;
@@ -20,16 +22,17 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private long REFRESH_TIME = 5000;
 	private long RETRY_TIME = 5000;
-	private int MAX_CACHE = 5;
+	private int MAX_CACHE_CAPACITY = 8; // In number of entries
+	private int MAX_CACHE_TIME = 2; // In minutes
 	private int MAX_RETRIES = 3;
-	private SharedGalleryContentCache<String, byte []> cache;
+	private SharedGalleryContentCache<String, SharedPicture> cache;
 
 	private Album current_album = null;
 	private List<String> current_picturelist = null;
 	private List<String> current_albumlist = null;
 
 	SharedGalleryContentProvider() {
-		cache = new SharedGalleryContentCache<>(MAX_CACHE);
+		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
 		current_albumlist = new ArrayList<>();
 		current_picturelist = new ArrayList<>();
 	}
@@ -64,7 +67,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public List<Album> getListOfAlbums() {
 		boolean executed;
-		current_album = null;
 		List<String> lst = new ArrayList<>();
 		for (Request e : discovery.getServers().values()) {
 			executed = false;
@@ -99,8 +101,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		boolean executed;
+		if(discovery.getServers().isEmpty())
+			return null;
 		current_album = album;
+		boolean executed;
 		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
 			executed = false;
@@ -137,8 +141,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		byte [] data;
 		boolean executed;
 
-		if(cache != null && cache.containsKey(album.getName() + "_" + picture.getName())) {
-			return cache.get(album.getName() + "_" + picture.getName());
+		if(discovery.getServers().isEmpty())
+			return null;
+
+		String key = album.getName() + "_" + picture.getName();
+		if(cache.containsKey(key) && timeBetween(cache.get(key).getCreation(), System.currentTimeMillis()) < MAX_CACHE_TIME) {
+			return cache.get(album.getName() + "_" + picture.getName()).getData();
 		}
 		else {
 			for(Request e : discovery.getServers().values()) {
@@ -147,7 +155,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					try {
 						data = e.getPictureData(album, picture);
 						if (data != null && data.length > 1) {
-							cache.put(album.getName() + '_' + picture.getName(), data);
+							SharedPicture cached_picture = new SharedPicture(picture.getName());
+							cached_picture.setData(data);
+							cache.put(album.getName() + '_' + picture.getName(), cached_picture);
 							return data;
 						}
 						executed = true;
@@ -173,16 +183,21 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	@Override
 	public Album createAlbum(String name) {
-		if(current_albumlist.contains(name))
+		if(current_albumlist.contains(name) || name.isEmpty() || discovery.getServers().isEmpty())
 			return null;
 		boolean executed = false;
 		int server = (int)(Math.random() * discovery.getServers().size());
 		Request request = new ArrayList<>(discovery.getServers().values()).get(server);
+		System.out.println(request.getAddress());
 		for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 			try {
-				Album album = new SharedAlbum(request.createAlbum(name));
-				if (album != null)
+				String received = request.createAlbum(name);
+				if (received != null && received.equalsIgnoreCase(name))
+				{
+					SharedAlbum album = new SharedAlbum(name);
+					current_albumlist.add(album.getName());
 					return album;
+				}
 				executed = true;
 			} catch (RuntimeException ex) {
 				if (request.getTries() == MAX_RETRIES + 1)
@@ -203,19 +218,22 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public void deleteAlbum(Album album) {
 		boolean executed;
+		if(current_album != null && current_album.getName().equalsIgnoreCase(album.getName()))
+			current_album = null;
 		for(Request e : discovery.getServers().values()) {
 			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
-					e.deleteAlbum(album);
+					if(e.deleteAlbum(album) && current_albumlist.contains(album.getName()))
+						current_albumlist.remove(album.getName());
 					executed = true;
-				} catch (RuntimeException ex) {
+				} catch (RuntimeException e1) {
 					if (e.getTries() == MAX_RETRIES + 1)
 						discovery.removeServer(e.getAddress());
 					try {
 						Thread.sleep(RETRY_TIME);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
+					} catch (InterruptedException e2) {
+						e2.printStackTrace();
 					}
 				}
 			}
@@ -237,6 +255,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				try {
 					Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
 					if (picture.getName().equalsIgnoreCase(name)) {
+						current_picturelist.add(picture.getName());
 						return picture;
 					}
 					executed = true;
@@ -266,6 +285,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					if(e.deletePicture(album, picture)) {
+						current_picturelist.remove(picture.getName());
 						return true;
 					}
 					executed = true;
@@ -291,21 +311,23 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
                     List<String> lst_current;
                     List<String> lst_possible;
 
-                    lst_current = current_albumlist;
-                    lst_possible = getListOfAlbums().stream().map(f -> f.getName()).collect(Collectors.toList());
-                    if(!listsAreEqual(lst_current, lst_possible)) {
-                        current_albumlist = lst_possible;
-                        gui.updateAlbums();
-                    }
+					// Viewing albums so try to update albums
+					lst_current = current_albumlist;
+					lst_possible = getListOfAlbums().stream().map(f -> f.getName()).collect(Collectors.toList());
+					if(!listsAreEqual(lst_current, lst_possible)) {
+						current_albumlist = lst_possible;
+						gui.updateAlbums();
+					}
 
-                    if(current_album != null) {
-                        lst_current = current_picturelist;
-                        lst_possible = getListOfPictures(current_album).stream().map(f -> f.getName()).collect(Collectors.toList());
-                        if(!listsAreEqual(lst_current, lst_possible)) {
-                            current_picturelist = lst_possible;
-                            gui.updateAlbum(current_album);
-                        }
-                    }
+					// Update last album viewed
+					if(current_album != null) {
+						lst_current = current_picturelist;
+						lst_possible = getListOfPictures(current_album).stream().map(f -> f.getName()).collect(Collectors.toList());
+						if(!listsAreEqual(lst_current, lst_possible)) {
+							current_picturelist = lst_possible;
+							gui.updateAlbum(current_album);
+						}
+					}
 
                     Thread.sleep(REFRESH_TIME);
                 } catch (InterruptedException e) {
@@ -317,9 +339,16 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	}
 
 	private Boolean listsAreEqual(List<String> lst1, List<String> lst2) {
+		if(lst1 == null | lst2 == null)
+			return false;
 		Collections.sort(lst1);
 		Collections.sort(lst2);
 		return !(lst1.size() != lst2.size() || !lst1.equals(lst2));
+	}
+
+	private double timeBetween(long time1, long time2) {
+		long result = time2 - time1;
+		return TimeUnit.MILLISECONDS.toMinutes(result);
 	}
 
 	/**
@@ -343,15 +372,27 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	static class SharedPicture implements GalleryContentProvider.Picture {
 		final String name;
+		final Long created;
+		byte [] data;
 
 		SharedPicture(String name) {
 			this.name = name;
+			this.created = System.currentTimeMillis();
 		}
 
 		@Override
 		public String getName() {
 			return name;
 		}
+
+		// Data of the picture
+		public byte [] getData() { return data; }
+
+		// Set of picture
+		public void setData(byte [] data) { this.data = data; }
+
+		// Time of creation
+		public long getCreation() { return created; }
 
 	}
 
