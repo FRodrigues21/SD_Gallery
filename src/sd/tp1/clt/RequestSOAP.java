@@ -13,9 +13,9 @@ import java.util.List;
  */
 public class RequestSOAP implements Request {
 
-    private SharedGalleryServerSOAP server;
-    private String url;
-    private int tries;
+    private SharedGalleryServerSOAP server; // Stub from the SOAP server
+    private String url; // Url of the SOAP server
+    private int tries; // Number of failed tries to make a request/method
 
     public RequestSOAP(String url) {
         this.tries = 0;
@@ -23,7 +23,7 @@ public class RequestSOAP implements Request {
         try {
             server = new SharedGalleryServerSOAPService(new URL(url)).getSharedGalleryServerSOAPPort();
         } catch (MalformedURLException | InaccessibleWSDLException e) {
-            System.out.println("BAD URL or INACCESSIBLE");
+            System.out.println("CLIENT ERROR: BAD URL or INACCESSIBLE");
         }
     }
 

@@ -23,8 +23,8 @@ public class RequestREST implements Request {
     private ClientConfig config = null;
     private Client client = null;
     private WebTarget target = null;
-    private String url;
-    private int tries;
+    private String url; // Url of the Rest server
+    private int tries; // Number of failed tries to make a request/method
 
     private static final int OK = Response.Status.OK.getStatusCode();
 

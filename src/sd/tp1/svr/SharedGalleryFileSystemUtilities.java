@@ -121,6 +121,7 @@ public class SharedGalleryFileSystemUtilities {
         return false;
     }
 
+    // Provided by teachers
     static class FileAlbum implements GalleryContentProvider.Album {
         final File dir;
 
@@ -139,6 +140,7 @@ public class SharedGalleryFileSystemUtilities {
 
     }
 
+    // Provided by teachers
     static class FilePicture implements GalleryContentProvider.Picture {
         final File file;
 
@@ -161,6 +163,7 @@ public class SharedGalleryFileSystemUtilities {
         }
     }
 
+    // Provided by teachers
     static boolean isPicture(File f) {
         String filename = f.getName();
         int i = filename.lastIndexOf('.');
