@@ -10,5 +10,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="jdk1.8.0_77" level="project" />
     <orderEntry type="library" name="Jersey-bundle_lib" level="project" />
+    <orderEntry type="library" name="commons-codec-1.10" level="project" />
   </component>
 </module>

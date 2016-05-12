@@ -1,6 +1,8 @@
 package sd.tp1.clt;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -31,8 +33,15 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private Album current_album = null; // Album being viewed by the client
 	private List<String> current_picturelist = null; // Current pictures list (kinda a cache)
 	private List<String> current_albumlist = null; // Current album list (kinda a cache)
+	private String local_password;
 
-	SharedGalleryContentProvider() {
+	SharedGalleryContentProvider(String password) {
+		local_password = password;
+		try {
+			System.out.println("ShareGalleryContentProvider: Started @ " + InetAddress.getLocalHost().getCanonicalHostName());
+		} catch (UnknownHostException e) {
+			System.err.println("CLIENT ERROR: CLIENT HAS NO ADDRESS! SO IT'S UNREACHABLE");
+		}
 		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
 		current_albumlist = new ArrayList<>();
 		current_picturelist = new ArrayList<>();
@@ -372,7 +381,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
      */
 	public void findServers() throws IOException {
 		if(discovery == null) {
-			discovery = new SharedGalleryServerDiscovery();
+			discovery = new SharedGalleryServerDiscovery(local_password);
 			new Thread(discovery).start();
 		}
 	}

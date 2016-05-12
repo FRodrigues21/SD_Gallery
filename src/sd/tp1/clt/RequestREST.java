@@ -1,8 +1,9 @@
 package sd.tp1.clt;
 
-import org.glassfish.jersey.client.ClientConfig;
 import sd.tp1.gui.GalleryContentProvider;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -11,8 +12,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Francisco Rodrigues 42727
@@ -20,20 +29,38 @@ import java.util.List;
  */
 public class RequestREST implements Request {
 
-    private ClientConfig config = null;
     private Client client = null;
     private WebTarget target = null;
     private String url; // Url of the Rest server
     private int tries; // Number of failed tries to make a request/method
+    private String local_password;
 
     private static final int OK = Response.Status.OK.getStatusCode();
 
-    public RequestREST(String url) {
+    public RequestREST(String url, String password) {
         this.tries = 0;
         this.url = url;
-        config = new ClientConfig();
-        client = ClientBuilder.newClient(config);
+        this.local_password = password;
+
+        SSLContext sc = null;
+        try {
+            sc = SSLContext.getInstance("TLSv1");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        TrustManager[] trustAllCerts = { new InsecureTrustManager() };
+        if (sc != null) {
+            try {
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+            }
+        }
+
+        client = ClientBuilder.newBuilder().hostnameVerifier(new InsecureHostnameVerifier()).sslContext(sc).build();
         target = client.target(getBaseURI(url));
+
     }
 
     private static URI getBaseURI(String url) {
@@ -50,7 +77,7 @@ public class RequestREST implements Request {
 
     @Override
     public List<String> getListOfAlbums() {
-        Response response = target.request().accept(MediaType.APPLICATION_JSON).get();
+        Response response = target.path("password="+local_password).request().accept(MediaType.APPLICATION_JSON).get();
         if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
         return null;
@@ -58,7 +85,7 @@ public class RequestREST implements Request {
 
     @Override
     public List<String> getListOfPictures(GalleryContentProvider.Album album) {
-        Response response = target.path(album.getName()).request().accept(MediaType.APPLICATION_JSON).get();
+        Response response = target.path(album.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_JSON).get();
         if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
         return null;
@@ -66,7 +93,7 @@ public class RequestREST implements Request {
 
     @Override
     public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
-        Response response = target.path(album.getName() + "/" + picture.getName()).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
+        Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
         if(response.getStatus() == OK)
             return response.readEntity(byte[].class);
         return null;
@@ -74,7 +101,7 @@ public class RequestREST implements Request {
 
     @Override
     public String createAlbum(String name) {
-        Response response = target.request().post(Entity.entity(name, MediaType.APPLICATION_JSON));
+        Response response = target.path("&password=" + local_password).request().post(Entity.entity(name, MediaType.APPLICATION_JSON));
         if(response.getStatus() == OK)
             return response.readEntity(String.class);
         return null;
@@ -82,7 +109,7 @@ public class RequestREST implements Request {
 
     @Override
     public Boolean deleteAlbum(GalleryContentProvider.Album album) {
-        Response response = target.path(album.getName()).request().delete();
+        Response response = target.path(album.getName() + "&password=" + local_password).request().delete();
         if(response.getStatus() == OK)
             return response.readEntity(Boolean.class);
         return false;
@@ -90,7 +117,7 @@ public class RequestREST implements Request {
 
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
-        Response response = target.path(album.getName() + "/" + name).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
+        Response response = target.path(album.getName() + "/" + name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
         if(response.getStatus() == OK)
             return response.readEntity(String.class);
         return null;
@@ -98,9 +125,35 @@ public class RequestREST implements Request {
 
     @Override
     public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
-        Response response = target.path(album.getName() + "/" + picture.getName()).request().delete();
+        Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().delete();
         if(response.getStatus() == OK)
             return response.readEntity(Boolean.class);
         return false;
     }
+
+    static class InsecureHostnameVerifier implements HostnameVerifier {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    }
+
+    static class InsecureTrustManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+            Arrays.asList( chain ).forEach( i -> {
+                System.err.println( "type: " + i.getType() + "from: " + i.getNotBefore() + " to: " + i.getNotAfter() );
+            });
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+
 }

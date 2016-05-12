@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="Jersey-bundle_lib">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/../SD2016-REST/lib/Jersey-bundle_lib" />
+      <root url="file://$USER_HOME$/Downloads/SD2016-REST/lib/Jersey-bundle_lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$PROJECT_DIR$/../SD2016-REST/lib/Jersey-bundle_lib" recursive="false" />
+    <jarDirectory url="file://$USER_HOME$/Downloads/SD2016-REST/lib/Jersey-bundle_lib" recursive="false" />
   </library>
 </component>

@@ -4,7 +4,9 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import sd.tp1.gui.impl.GalleryWindow;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Francisco Rodrigues 42727
@@ -15,11 +17,14 @@ public class SharedGallery extends Application {
 	GalleryWindow window;
 	
 	public SharedGallery() throws IOException {
-		window = new GalleryWindow(new SharedGalleryContentProvider());
+		System.out.println("LOCAL PASSWORD:");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		window = new GalleryWindow(new SharedGalleryContentProvider(reader.readLine()));
 	}	
 
     public static void main(String[] args){
-        launch(args);
+
+		launch(args);
     }
     
 	@Override

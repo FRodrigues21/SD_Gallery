@@ -35,6 +35,7 @@ public class SharedGalleryClientDiscovery implements Runnable {
         }
         catch (IOException e) {
             System.out.println("SERVER ERROR: Could not create a client discovery!");
+            e.printStackTrace();
             System.exit(1);
         }
 

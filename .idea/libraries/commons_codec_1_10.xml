@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="commons-codec-1.10">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/aula 8/lib/commons-codec-1.10.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/aula 8/lib/json-simple-1.1.1.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/aula 8/lib/scribejava-apis-2.5.3.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/aula 8/lib/scribejava-core-2.5.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

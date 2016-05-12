@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +22,7 @@ import java.util.List;
 @Path("/")
 public class SharedGalleryServerREST {
 
+    private static URI baseUri = null;
     private static File basePath = new File("./FileServerREST"); // Path where the server files are
 
     /**
@@ -96,18 +98,23 @@ public class SharedGalleryServerREST {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
+
+
     public static void main(String[] args) throws Exception {
 
         if(!basePath.exists())
             basePath.mkdir();
 
-        URI baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(8090).build();
+        // Get local address and create server address
+        // Using getHostAddress because the ipv4 doesn't work on mac (at least mine)
+        //baseUri = UriBuilder.fromUri("http://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(8090).build();
+        baseUri = UriBuilder.fromUri("http://0.0.0.0/FileServerREST").port(9090).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerREST.class);
 
         HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, config);
 
-        System.err.println("SharedGalleryServerSOAP: Started @ " + baseUri.toString());
+        System.err.println("SharedGalleryServerREST: Started @ " + baseUri.toString());
 
         // Receives
         Thread r = new Thread(new SharedGalleryClientDiscovery(baseUri.toString()));

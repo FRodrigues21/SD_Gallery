@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -121,6 +122,23 @@ public class SharedGalleryFileSystemUtilities {
         return false;
     }
 
+    // Aula 7
+
+    public static List<String> getAllPicturesWithPattern(File basePath, String pattern) {
+        List<String> pictures = new ArrayList<>();
+        if(basePath.exists()) {
+            if(basePath.listFiles() != null)
+                for (File a : basePath.listFiles())
+                    if(a.listFiles() != null)
+                        for (File p: a.listFiles())
+                            if(p.isFile() && isPicture(p) && p.getName().contains(pattern))
+                                pictures.add(a.getName() + "/" + p.getName());
+            return pictures;
+        }
+        return null;
+
+    }
+
     // Provided by teachers
     static class FileAlbum implements GalleryContentProvider.Album {
         final File dir;
@@ -171,6 +189,7 @@ public class SharedGalleryFileSystemUtilities {
         return f.isFile() && EXTENSIONS.contains(ext) && !filename.startsWith(".") && !filename.endsWith(".deleted");
     }
 
-    static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg", "jpeg", "png" });
+    // "jpeg", "png"
+    static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg" });
 
 }

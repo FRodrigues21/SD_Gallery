@@ -66,7 +66,8 @@ public class SharedGalleryServerSOAP {
         if(!basePath.exists())
             basePath.mkdir();
 
-        // Get local address and publish
+        // Get local address and create server  address
+        // Using getHostAddress because the ipv4 doesn't work on mac (at least mine)
         String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8080/FileServerSOAP";
         Endpoint.publish(address_s, new SharedGalleryServerSOAP());
 

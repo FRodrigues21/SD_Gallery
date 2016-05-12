@@ -15,10 +15,13 @@ public class SharedGalleryServerDiscovery implements Runnable{
     private int client_port = 9000; // Multicast Port
     private InetAddress client_address = null; // Client address
     private MulticastSocket client_socket = null; // Socket Multicast
+    private String local_password;
 
     private Map<String,Request> servers = new ConcurrentHashMap<>(); // Map containing servers where the key is the server address and the value an object that handles the requests
 
-    public SharedGalleryServerDiscovery() { }
+    public SharedGalleryServerDiscovery(String password) {
+        local_password = password;
+    }
 
     /**
      * Get the map of servers
@@ -64,7 +67,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                 }
                                 else if(url.contains("REST")) {
                                     System.err.println("ADDED: " + url);
-                                    servers.put(url, new RequestREST(url));
+                                    servers.put(url, new RequestREST(url, local_password));
                                 }
                             }
                         }
