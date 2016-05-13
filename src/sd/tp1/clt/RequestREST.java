@@ -131,14 +131,14 @@ public class RequestREST implements Request {
         return false;
     }
 
-    static class InsecureHostnameVerifier implements HostnameVerifier {
+    private static class InsecureHostnameVerifier implements HostnameVerifier {
         @Override
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
     }
 
-    static class InsecureTrustManager implements X509TrustManager {
+    private static class InsecureTrustManager implements X509TrustManager {
         @Override
         public void checkClientTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
         }
