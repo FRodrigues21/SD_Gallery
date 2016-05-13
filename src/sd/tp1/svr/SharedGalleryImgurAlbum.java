@@ -27,6 +27,10 @@ public class SharedGalleryImgurAlbum {
         return pictures.get(name);
     }
 
+    public void clear() {
+        pictures.clear();
+    }
+
     public void addPicture(String name, String id) {
         pictures.put(name, id);
     }

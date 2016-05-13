@@ -62,6 +62,8 @@ public class SharedGalleryServerPROXY {
     public Response getListOfAlbums(@PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
 
+            index_albums.clear();
+
             List<String> lst = new ArrayList<String>();
 
             OAuthRequest albumsReq = new OAuthRequest(Verb.GET, "https://api.imgur.com/3/account/" + ACCOUNT + "/albums", service);
@@ -84,7 +86,10 @@ public class SharedGalleryServerPROXY {
                 String title = (String)album.get("title");
                 if(!index_albums.containsKey(title))
                     index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
-                System.out.println("FETCHED: " + title + " " + id);
+                else {
+                    title = title + "_" + id;
+                    index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
+                }
                 lst.add(title);
             }
 
@@ -124,6 +129,9 @@ public class SharedGalleryServerPROXY {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfPictures(@PathParam("password") String password, @PathParam("album") String album) {
         if(password.equalsIgnoreCase(local_password)) {
+
+            index_albums.get(album).clear();
+
             List<String> lst = new ArrayList<String>();
 
             OAuthRequest albumsReq = new OAuthRequest(Verb.GET, "https://api.imgur.com/3/account/" + ACCOUNT + "/album/" + index_albums.get(album).getId() + "/images", service);
@@ -146,7 +154,10 @@ public class SharedGalleryServerPROXY {
                 String title = (String)picture.get("name");
                 if(index_albums.containsKey(album))
                     index_albums.get(album).addPicture(title, id);
-                System.out.println("FETCHED: " + title + " " + id);
+                else {
+                    title = title + "_" + id;
+                    index_albums.get(album).addPicture(title, id);
+                }
                 lst.add(title);
             }
 
