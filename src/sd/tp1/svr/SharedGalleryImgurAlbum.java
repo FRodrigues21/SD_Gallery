@@ -23,6 +23,10 @@ public class SharedGalleryImgurAlbum {
         return id;
     }
 
+    public boolean hasPicture(String name) {
+        return pictures.containsKey(name);
+    }
+
     public String getPictureId(String name) {
         return pictures.get(name);
     }
