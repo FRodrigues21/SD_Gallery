@@ -195,10 +195,11 @@ public class SharedGalleryServerPROXY {
                     JSONObject picture = (JSONObject)picturesIt.next();
                     String id = (String)picture.get("id");
                     String title = (String)picture.get("name");
-                    if(index_albums.containsKey(album))
+                    if(!index_albums.get(album).hasPicture(title) && title != null)
                         index_albums.get(album).addPicture(title, id);
                     else {
                         title = title + "_" + id;
+                        System.out.println("Fetched Image: " + title);
                         index_albums.get(album).addPicture(title, id);
                     }
                     lst.add(title);
@@ -356,7 +357,7 @@ public class SharedGalleryServerPROXY {
         if(!basePath.exists())
             basePath.mkdir();
 
-        baseUri = UriBuilder.fromUri("https://0.0.0.0/FileServerREST").port(9090).build();
+        baseUri = UriBuilder.fromUri("https://0.0.0.0/FileServerREST").port(9070).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerPROXY.class);
 
