@@ -122,25 +122,8 @@ public class SharedGalleryFileSystemUtilities {
         return false;
     }
 
-    // Aula 7
-
-    public static List<String> getAllPicturesWithPattern(File basePath, String pattern) {
-        List<String> pictures = new ArrayList<>();
-        if(basePath.exists()) {
-            if(basePath.listFiles() != null)
-                for (File a : basePath.listFiles())
-                    if(a.listFiles() != null)
-                        for (File p: a.listFiles())
-                            if(p.isFile() && isPicture(p) && p.getName().contains(pattern))
-                                pictures.add(a.getName() + "/" + p.getName());
-            return pictures;
-        }
-        return null;
-
-    }
-
     // Provided by teachers
-    static class FileAlbum implements GalleryContentProvider.Album {
+    private static class FileAlbum implements GalleryContentProvider.Album {
         final File dir;
 
         FileAlbum(File dir) {
@@ -159,7 +142,7 @@ public class SharedGalleryFileSystemUtilities {
     }
 
     // Provided by teachers
-    static class FilePicture implements GalleryContentProvider.Picture {
+    private static class FilePicture implements GalleryContentProvider.Picture {
         final File file;
 
         FilePicture(File file) {
@@ -182,7 +165,7 @@ public class SharedGalleryFileSystemUtilities {
     }
 
     // Provided by teachers
-    static boolean isPicture(File f) {
+    private static boolean isPicture(File f) {
         String filename = f.getName();
         int i = filename.lastIndexOf('.');
         String ext = i < 0 ? "" : filename.substring(i + 1).toLowerCase();
@@ -190,6 +173,6 @@ public class SharedGalleryFileSystemUtilities {
     }
 
     // "jpeg", "png"
-    static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg" });
+    private static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg" });
 
 }

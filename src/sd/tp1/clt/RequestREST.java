@@ -11,6 +11,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import java.io.FilenameFilter;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -117,7 +118,7 @@ public class RequestREST implements Request {
 
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
-        Response response = target.path(album.getName() + "/" + name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
+        Response response = target.path(album.getName() + "/" +  name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
         if(response.getStatus() == OK)
             return response.readEntity(String.class);
         return null;
@@ -146,7 +147,7 @@ public class RequestREST implements Request {
         @Override
         public void checkServerTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
             Arrays.asList( chain ).forEach( i -> {
-                System.err.println( "type: " + i.getType() + "from: " + i.getNotBefore() + " to: " + i.getNotAfter() );
+                System.err.println( "type: " + i.getType() + " from: " + i.getNotBefore() + " to: " + i.getNotAfter() );
             });
         }
 

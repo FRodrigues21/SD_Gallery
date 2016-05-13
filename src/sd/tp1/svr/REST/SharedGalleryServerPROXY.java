@@ -47,13 +47,10 @@ public class SharedGalleryServerPROXY {
     private static OAuth20Service service;
     private static String authorizationUrl = "";
     private static OAuth2AccessToken accessToken;
+
     private static String local_password;
     private static URI baseUri = null;
-    private static File basePath = new File("./FileServerREST"); // Path where the server files are
     private static final File KEYSTORE = new File("./server.jks");
-    /**
-     * The methods from this class act the same way as the ones from REQUEST interface, but instead of null return an error status code
-     */
 
     private static Map<String, SharedGalleryImgurAlbum> index_albums;
 
@@ -82,9 +79,8 @@ public class SharedGalleryServerPROXY {
                 }
 
                 JSONArray albums = (JSONArray) res.get("data");
-                Iterator albumsIt = albums.iterator();
-                while (albumsIt.hasNext()) {
-                    JSONObject album = (JSONObject)albumsIt.next();
+                for (Object obj : albums) {
+                    JSONObject album = (JSONObject)obj;
                     String id = (String)album.get("id");
                     String title = (String)album.get("title");
                     if(!index_albums.containsKey(title))
@@ -96,7 +92,7 @@ public class SharedGalleryServerPROXY {
                     lst.add(title);
                 }
 
-                if(lst != null)
+                if(lst.size() > 0)
                     return Response.ok(lst).build();
             }
 
@@ -126,8 +122,15 @@ public class SharedGalleryServerPROXY {
                     e.printStackTrace();
                 }
 
-                if ((boolean) res.get("success"))
-                    return Response.ok(album).build();
+                if ((boolean) res.get("success")) {
+                    JSONObject root = (JSONObject)res.get("data");
+                    String title = album;
+                    String id = (String) root.get("id");
+                    if(index_albums.containsKey(album))
+                        title = album + "_" + id;
+                    index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
+                    return Response.ok(title).build();
+                }
             }
 
         }
@@ -172,7 +175,7 @@ public class SharedGalleryServerPROXY {
 
             index_albums.get(album).clear();
 
-            List<String> lst = new ArrayList<String>();
+            List<String> lst = new ArrayList<>();
 
             String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/album/" + index_albums.get(album).getId() + "/images";
 
@@ -190,23 +193,23 @@ public class SharedGalleryServerPROXY {
                 }
 
                 JSONArray root = (JSONArray) res.get("data");
-                Iterator picturesIt = root.iterator();
-                while (picturesIt.hasNext()) {
-                    JSONObject picture = (JSONObject)picturesIt.next();
+                for (Object obj : root) {
+                    JSONObject picture = (JSONObject)obj;
                     String id = (String)picture.get("id");
                     String title = (String)picture.get("name");
-                    if(!index_albums.get(album).hasPicture(title) && title != null)
+                    if(title != null && (title.contains(".jpg") || title.contains(".jpeg") || title.contains(".png")))
+                        title = title.substring(0, title.lastIndexOf('.'));
+                    if(title != null && !index_albums.get(album).hasPicture(title))
                         index_albums.get(album).addPicture(title, id);
                     else {
                         title = title + "_" + id;
-                        System.out.println("Fetched Image: " + title);
                         index_albums.get(album).addPicture(title, id);
                     }
                     lst.add(title);
                 }
             }
 
-            if(lst != null)
+            if(lst.size() > 0)
                 return Response.ok(lst).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
@@ -297,6 +300,8 @@ public class SharedGalleryServerPROXY {
                     String title = picture;
                     if(index_albums.get(album).hasPicture(title))
                         title = picture + "_" + id;
+                    if(title != null && (title.contains(".jpg") || title.contains(".jpeg") || title.contains(".png")))
+                        title = title.substring(0, title.lastIndexOf('.'));
                     return Response.ok(title).build();
                 }
             }
@@ -353,9 +358,6 @@ public class SharedGalleryServerPROXY {
         System.out.println("TOKEN: ");
         String code = reader.readLine();
         accessToken = service.getAccessToken(code);
-
-        if(!basePath.exists())
-            basePath.mkdir();
 
         baseUri = UriBuilder.fromUri("https://0.0.0.0/FileServerREST").port(9070).build();
         ResourceConfig config = new ResourceConfig();
