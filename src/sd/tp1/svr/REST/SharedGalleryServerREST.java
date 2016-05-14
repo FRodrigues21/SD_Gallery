@@ -27,10 +27,8 @@ import java.util.List;
 @Path("/")
 public class SharedGalleryServerREST {
 
-    private static URI baseUri = null;
     private static File basePath = new File("./FileServerREST"); // Path where the server files are
     private static String local_password;
-
     private static final File KEYSTORE = new File("./server.jks");
 
     /**
@@ -64,7 +62,7 @@ public class SharedGalleryServerREST {
     @GET
     @Path("/{album}&password={password}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getListOfPictures(@PathParam("password") String password, @PathParam("album") String album) {
+    public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
             List<String> lst = SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
             if(lst != null)
@@ -77,11 +75,11 @@ public class SharedGalleryServerREST {
     @Path("/{album}&password={password}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteAlbum(@PathParam("password") String password, @PathParam("album") String album) {
+    public Response deleteAlbum(@PathParam("album") String album, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created)
-                return Response.ok(created).build();
+                return Response.ok(true).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
@@ -89,7 +87,7 @@ public class SharedGalleryServerREST {
     @GET
     @Path("/{album}/{picture}&password={password}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getPictureData(@PathParam("password") String password, @PathParam("album") String album, @PathParam("picture") String picture) {
+    public Response getPictureData(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
             byte [] data = SharedGalleryFileSystemUtilities.getDataFromPicture(basePath, album, picture);
             if(data != null)
@@ -102,7 +100,7 @@ public class SharedGalleryServerREST {
     @Path("/{album}/{picture}&password={password}")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadPicture(@PathParam("password") String password, @PathParam("album") String album, @PathParam("picture") String picture, byte [] data) {
+    public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password, byte [] data) {
         if(password.equalsIgnoreCase(local_password)) {
             if(picture.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data)))
                 return Response.ok(picture).build();
@@ -113,11 +111,11 @@ public class SharedGalleryServerREST {
     @DELETE
     @Path("/{album}/{picture}&password={password}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deletePicture(@PathParam("password") String password, @PathParam("album") String album, @PathParam("picture") String picture) {
+    public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created)
-                return Response.ok(created).build();
+                return Response.ok(true).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
@@ -138,7 +136,7 @@ public class SharedGalleryServerREST {
         if(!basePath.exists())
             basePath.mkdir();
 
-        baseUri = UriBuilder.fromUri("https://0.0.0.0/FileServerREST").port(9090).build();
+        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9090).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerREST.class);
 

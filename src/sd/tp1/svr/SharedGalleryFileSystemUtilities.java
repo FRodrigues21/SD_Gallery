@@ -24,7 +24,7 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static List<String> getDirectoriesFromPath(File basePath) {
         if(basePath.exists() && basePath.isDirectory())
-            return Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && !f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> new String(f.getName())).collect(Collectors.toList());
+            return Arrays.asList(basePath.listFiles()).stream().filter(f -> f.isDirectory() && !f.getName().endsWith(".deleted") && ! f.getName().startsWith(".")).map(f -> f.getName()).collect(Collectors.toList());
         return null;
     }
 
@@ -37,7 +37,7 @@ public class SharedGalleryFileSystemUtilities {
     public static List<String> getPicturesFromDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
         if(dirPath.exists() && dirPath.isDirectory())
-            return Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> new String(f.getName())).collect(Collectors.toList());
+            return Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> f.getName().substring(0, f.getName().lastIndexOf('.'))).collect(Collectors.toList());
        return null;
     }
 
@@ -49,9 +49,12 @@ public class SharedGalleryFileSystemUtilities {
      * @return the data of the picture from the directory album from basePath or null
      */
     public static byte [] getDataFromPicture(File basePath, String album, String picture) {
-        File filePath = new File(basePath + "/" + album + "/" + picture);
-        if(filePath.exists() && filePath.isFile())
-            return new FilePicture(filePath).getData();
+        String [] extension = {"jpeg", "png", "jpg" };
+        for(String ext : extension) {
+            File filePath = new File(basePath + "/" + album + "/" + picture + "." + ext);
+            if(filePath.exists() && filePath.isFile())
+                return new FilePicture(filePath).getData();
+        }
         return null;
     }
 
@@ -79,8 +82,7 @@ public class SharedGalleryFileSystemUtilities {
     public static Boolean deleteDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
         if (dirPath.exists() && dirPath.isDirectory()) {
-            dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
-            return true;
+            return dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
         }
         return false;
     }
@@ -173,6 +175,6 @@ public class SharedGalleryFileSystemUtilities {
     }
 
     // "jpeg", "png"
-    private static final List<String> EXTENSIONS = Arrays.asList(new String[] { "jpg" });
+    private static final List<String> EXTENSIONS = Arrays.asList("jpeg", "png", "jpg");
 
 }

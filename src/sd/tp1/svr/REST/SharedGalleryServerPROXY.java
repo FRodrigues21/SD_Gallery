@@ -49,7 +49,6 @@ public class SharedGalleryServerPROXY {
     private static OAuth2AccessToken accessToken;
 
     private static String local_password;
-    private static URI baseUri = null;
     private static final File KEYSTORE = new File("./server.jks");
 
     private static Map<String, SharedGalleryImgurAlbum> index_albums;
@@ -67,6 +66,7 @@ public class SharedGalleryServerPROXY {
             String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/albums";
             OAuthRequest albumsReq = new OAuthRequest(Verb.GET, endpoint, service);
             service.signRequest(accessToken, albumsReq);
+
             com.github.scribejava.core.model.Response albumsRes = albumsReq.send();
 
             if(albumsRes.getCode() == OK) {
@@ -111,6 +111,7 @@ public class SharedGalleryServerPROXY {
             OAuthRequest albumPost = new OAuthRequest(Verb.POST, endpoint, service);
             albumPost.addBodyParameter("title", album);
             service.signRequest(accessToken, albumPost);
+
             com.github.scribejava.core.model.Response albumRes = albumPost.send();
 
             if(albumRes.getCode() == OK) {
@@ -141,28 +142,18 @@ public class SharedGalleryServerPROXY {
     @Path("/{album}&password={password}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteAlbum(@PathParam("password") String password, @PathParam("album") String album) {
+    public Response deleteAlbum(@PathParam("album") String album, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
 
-            String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/album/" + index_albums.get(album).getId();
+            String endpoint = "https://api.imgur.com/3/album/" + index_albums.get(album).getId();
             OAuthRequest albumDel = new OAuthRequest(Verb.DELETE, endpoint, service);
             albumDel.addBodyParameter("title", album);
             service.signRequest(accessToken, albumDel);
+
             com.github.scribejava.core.model.Response albumRes = albumDel.send();
 
-            if(albumRes.getCode() == OK) {
-                JSONParser parser = new JSONParser();
-                JSONObject res = null;
-                try {
-                    res = (JSONObject) parser.parse(albumRes.getBody());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-                boolean deleted = (boolean)res.get("success");
-                if(deleted)
-                    return Response.ok(deleted).build();
-            }
+            if(albumRes.isSuccessful())
+                return Response.ok(true).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
@@ -170,17 +161,18 @@ public class SharedGalleryServerPROXY {
     @GET
     @Path("/{album}&password={password}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getListOfPictures(@PathParam("password") String password, @PathParam("album") String album) {
+    public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
 
             index_albums.get(album).clear();
 
             List<String> lst = new ArrayList<>();
 
-            String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/album/" + index_albums.get(album).getId() + "/images";
+            String endpoint = "https://api.imgur.com/3/album/" + index_albums.get(album).getId() + "/images";
 
             OAuthRequest picturesReq = new OAuthRequest(Verb.GET, endpoint, service);
             service.signRequest(accessToken, picturesReq);
+
             com.github.scribejava.core.model.Response picturesRes = picturesReq.send();
 
             if(picturesRes.getCode() == OK) {
@@ -218,15 +210,15 @@ public class SharedGalleryServerPROXY {
     @GET
     @Path("/{album}/{picture}&password={password}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getPictureData(@PathParam("password") String password, @PathParam("album") String album, @PathParam("picture") String picture) {
+    public Response getPictureData(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
 
             byte [] data = null;
 
-            String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/image/" + index_albums.get(album).getPictureId(picture);
-            //TODO: Fix endpoint
+            String endpoint = "https://api.imgur.com/3/image/" + index_albums.get(album).getPictureId(picture);
             OAuthRequest pictureGet = new OAuthRequest(Verb.GET, endpoint, service);
             service.signRequest(accessToken, pictureGet);
+
             com.github.scribejava.core.model.Response pictureRes = pictureGet.send();
 
             if(pictureRes.getCode() == OK) {
@@ -273,7 +265,7 @@ public class SharedGalleryServerPROXY {
     @Path("/{album}/{picture}&password={password}")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadPicture(@PathParam("password") String password, @PathParam("album") String album, @PathParam("picture") String picture, byte [] data) {
+    public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password, byte [] data) {
         if(password.equalsIgnoreCase(local_password)) {
 
             String endpoint = "https://api.imgur.com/3/image";
@@ -323,19 +315,9 @@ public class SharedGalleryServerPROXY {
             service.signRequest(accessToken, picturePost);
             com.github.scribejava.core.model.Response pictureRes = picturePost.send();
 
-            if(pictureRes.getCode() == OK) {
-                JSONParser parser = new JSONParser();
-                JSONObject res = null;
-                try {
-                    res = (JSONObject) parser.parse(pictureRes.getBody());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+            if(pictureRes.isSuccessful())
+                return Response.ok(true).build();
 
-                boolean created = (boolean)res.get("success");
-                if (created)
-                    return Response.ok(created).build();
-            }
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
@@ -360,7 +342,7 @@ public class SharedGalleryServerPROXY {
         String code = reader.readLine();
         accessToken = service.getAccessToken(code);
 
-        baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9070).build();
+        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9070).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerPROXY.class);
 
