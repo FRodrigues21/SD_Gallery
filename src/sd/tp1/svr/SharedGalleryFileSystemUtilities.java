@@ -66,10 +66,8 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static String createDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
-        if(!dirPath.exists()) {
-            dirPath.mkdir();
+        if(dirPath.mkdir())
             return new FileAlbum(dirPath).getName();
-        }
         return null;
     }
 
@@ -81,10 +79,7 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static Boolean deleteDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
-        if (dirPath.exists() && dirPath.isDirectory()) {
-            return dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
-        }
-        return false;
+        return dirPath.exists() && dirPath.isDirectory() && dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
     }
 
     /**
@@ -117,11 +112,7 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static Boolean deletePicture(File basePath, String album, String picture) {
         File filePath = new File(basePath + "/" + album + "/" + picture);
-        if(filePath.exists() && filePath.isFile()) {
-            filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
-            return true;
-        }
-        return false;
+        return filePath.exists() && filePath.isFile() && filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
     }
 
     // Provided by teachers
@@ -174,7 +165,6 @@ public class SharedGalleryFileSystemUtilities {
         return f.isFile() && EXTENSIONS.contains(ext) && !filename.startsWith(".") && !filename.endsWith(".deleted");
     }
 
-    // "jpeg", "png"
     private static final List<String> EXTENSIONS = Arrays.asList("jpeg", "png", "jpg");
 
 }

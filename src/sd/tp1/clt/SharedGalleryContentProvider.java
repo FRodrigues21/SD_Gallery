@@ -17,16 +17,16 @@ import sd.tp1.gui.Gui;
  */
 public class SharedGalleryContentProvider implements GalleryContentProvider {
 
-	Gui gui;
+	private Gui gui;
 
-	SharedGalleryServerDiscovery discovery;
+	private SharedGalleryServerDiscovery discovery;
 
-	private long REFRESH_TIME = 5000; // Time between refresh
-	private long RETRY_TIME = 5000; // Time between trying to run the method again
-	private int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
+	private static final long REFRESH_TIME = 5000; // Time between refresh
+	private static final long RETRY_TIME = 5000; // Time between trying to run the method again
+	private static final int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
 
-	private int MAX_CACHE_CAPACITY = 8; // Cache maximum number of entries
-	private int MAX_CACHE_TIME = 2; // Cache maximum time in minutes
+	private static final int MAX_CACHE_CAPACITY = 8; // Cache maximum number of entries
+	private static final int MAX_CACHE_TIME = 2; // Cache maximum time in minutes
 
 	private SharedGalleryContentCache<String, SharedPicture> cache;
 
@@ -379,7 +379,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 * Thread that runs along with the client and finds new ShareGalleryServers
 	 * @throws IOException- In case the thread can't be created
      */
-	public void findServers() throws IOException {
+	private void findServers() throws IOException {
 		if(discovery == null) {
 			discovery = new SharedGalleryServerDiscovery(local_password);
 			new Thread(discovery).start();
@@ -389,7 +389,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	/**
 	 * Represents a shared album.
 	 */
-	static class SharedAlbum implements GalleryContentProvider.Album {
+	private static class SharedAlbum implements GalleryContentProvider.Album {
 		final String name;
 
 		SharedAlbum(String name) {
@@ -405,7 +405,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	/**
 	 * Represents a shared picture.
 	 */
-	static class SharedPicture implements GalleryContentProvider.Picture {
+	private static class SharedPicture implements GalleryContentProvider.Picture {
 		final String name;
 		final Long created;
 		byte [] data;
