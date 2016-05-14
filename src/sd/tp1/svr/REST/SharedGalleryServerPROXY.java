@@ -13,7 +13,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import sd.tp1.svr.SharedGalleryImgurAlbum;
 import sd.tp1.svr.SharedGalleryClientDiscovery;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -24,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -224,6 +224,7 @@ public class SharedGalleryServerPROXY {
             byte [] data = null;
 
             String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/image/" + index_albums.get(album).getPictureId(picture);
+            //TODO: Fix endpoint
             OAuthRequest pictureGet = new OAuthRequest(Verb.GET, endpoint, service);
             service.signRequest(accessToken, pictureGet);
             com.github.scribejava.core.model.Response pictureRes = pictureGet.send();
@@ -359,7 +360,7 @@ public class SharedGalleryServerPROXY {
         String code = reader.readLine();
         accessToken = service.getAccessToken(code);
 
-        baseUri = UriBuilder.fromUri("https://0.0.0.0/FileServerREST").port(9070).build();
+        baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9070).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerPROXY.class);
 

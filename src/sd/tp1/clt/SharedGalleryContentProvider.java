@@ -38,7 +38,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	SharedGalleryContentProvider(String password) {
 		local_password = password;
 		try {
-			System.out.println("ShareGalleryContentProvider: Started @ " + InetAddress.getLocalHost().getCanonicalHostName());
+			System.out.println("ShareGalleryContentProvider: Started @ " + InetAddress.getLocalHost().getHostAddress());
 		} catch (UnknownHostException e) {
 			System.err.println("CLIENT ERROR: CLIENT HAS NO ADDRESS! SO IT'S UNREACHABLE");
 		}

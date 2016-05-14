@@ -1,4 +1,4 @@
-package sd.tp1.svr;
+package sd.tp1.svr.REST;
 
 import java.util.HashMap;
 import java.util.Map;
