@@ -60,8 +60,6 @@ public class SharedGalleryServerPROXY {
     public Response getListOfAlbums(@PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
 
-            index_albums.clear();
-
             List<String> lst = new ArrayList<>();
 
             String endpoint = "https://api.imgur.com/3/account/" + ACCOUNT + "/albums";
@@ -86,15 +84,16 @@ public class SharedGalleryServerPROXY {
                     String title = (String)album.get("title");
                     if(!index_albums.containsKey(title))
                         index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
-                    else {
+                    else if(index_albums.containsKey(title) && !index_albums.get(title).getId().equalsIgnoreCase(id)) {
                         title = title + "_" + id;
                         index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
                     }
-                    lst.add(title);
                 }
 
-                if(lst.size() > 0)
+                if(index_albums.keySet().size() > 0) {
+                    lst.addAll(index_albums.keySet());
                     return Response.ok(lst).build();
+                }
             }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -158,8 +157,10 @@ public class SharedGalleryServerPROXY {
 
                 com.github.scribejava.core.model.Response albumRes = albumDel.send();
 
-                if(albumRes.isSuccessful())
+                if(albumRes.isSuccessful()) {
+                    index_albums.remove(album);
                     return Response.ok(true).build();
+                }
             }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -172,7 +173,6 @@ public class SharedGalleryServerPROXY {
     public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
         if(password.equalsIgnoreCase(local_password)) {
             if(index_albums.containsKey(album)) {
-                index_albums.get(album).clear();
 
                 List<String> lst = new ArrayList<>();
 
@@ -199,16 +199,20 @@ public class SharedGalleryServerPROXY {
                         String title = (String)picture.get("name");
                         if(title != null && (title.contains(".jpg") || title.contains(".jpeg") || title.contains(".png")))
                             title = title.substring(0, title.lastIndexOf('.'));
-                        if(title == null || index_albums.get(album).hasPicture(title))
+                        if(title != null && !index_albums.get(album).hasPicture(title)) {
+                            index_albums.get(album).addPicture(title, id);
+                        }
+                        else if(title == null || (index_albums.get(album).hasPicture(title) && !index_albums.get(album).getPictureId(title).equalsIgnoreCase(id))) {
                             title = title + "_" + id;
-                        index_albums.get(album).addPicture(title, id);
-                        //System.out.println("[ PROXY ] Added picture " + title + " with id " + id);
-                        lst.add(title);
+                            index_albums.get(album).addPicture(title, id);
+                        }
                     }
                 }
 
-                if(lst.size() > 0)
+                if(index_albums.get(album).getPictures().keySet().size() > 0) {
+                    lst.addAll(index_albums.get(album).getPictures().keySet());
                     return Response.ok(lst).build();
+                }
             }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -341,8 +345,10 @@ public class SharedGalleryServerPROXY {
                 service.signRequest(accessToken, picturePost);
                 com.github.scribejava.core.model.Response pictureRes = picturePost.send();
 
-                if(pictureRes.isSuccessful())
+                if(pictureRes.isSuccessful()) {
+                    index_albums.get(album).removePicture(picture);
                     return Response.ok(true).build();
+                }
             }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -351,7 +357,7 @@ public class SharedGalleryServerPROXY {
 
     public static void main(String[] args) throws Exception {
 
-        index_albums = new HashMap<>();
+        index_albums = new TreeMap<>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 

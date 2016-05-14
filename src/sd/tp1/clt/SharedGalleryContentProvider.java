@@ -94,7 +94,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				}
 			}
 		}
-		current_albumlist = lst;
 		return lst.stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
@@ -158,8 +157,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			// Safe delete picture from cache
 			if(cache.containsKey(key))
 				cache.remove(key);
-
-
 
 			// Retrieve cache again
 			for(Request e : discovery.getServers().values()) {
