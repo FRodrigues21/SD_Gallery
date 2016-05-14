@@ -157,6 +157,10 @@ public class SharedGalleryFileSystemUtilities {
         }
     }
 
+    public static String removeExtension(String filename) {
+        return filename.substring(0, filename.lastIndexOf('.'));
+    }
+
     // Provided by teachers
     private static boolean isPicture(File f) {
         String filename = f.getName();

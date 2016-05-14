@@ -39,4 +39,6 @@ public class SharedGalleryImgurAlbum {
         pictures.put(name, id);
     }
 
+    public Map<String, String> getPictures() { return pictures; }
+
 }

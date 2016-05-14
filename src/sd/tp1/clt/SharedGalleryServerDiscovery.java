@@ -72,7 +72,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                             }
                         }
                     } catch (IOException e) {
-                        System.out.println("CLIENT ERROR: No packet received!");
+                        //System.out.println("CLIENT ERROR: No packet received!");
                     }
                 }
         });

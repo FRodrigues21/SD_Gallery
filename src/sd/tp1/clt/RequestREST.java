@@ -37,6 +37,9 @@ public class RequestREST implements Request {
     private String local_password;
 
     private static final int OK = Response.Status.OK.getStatusCode();
+    private static final int UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
+    private static final int NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
+    private static final int INTERNAL_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     public RequestREST(String url, String password) {
         this.tries = 0;
@@ -81,6 +84,8 @@ public class RequestREST implements Request {
         Response response = target.path("password="+local_password).request().accept(MediaType.APPLICATION_JSON).get();
         if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
 
@@ -89,14 +94,20 @@ public class RequestREST implements Request {
         Response response = target.path(album.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_JSON).get();
         if(response.getStatus() == OK)
             return response.readEntity(ArrayList.class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
 
     @Override
     public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
         Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
+        System.out.println("Path: " + album.getName() + "/" + picture.getName() + "&password=" + local_password);
+        System.out.println("Status: " + response.getStatus() + " " + INTERNAL_ERROR);
         if(response.getStatus() == OK)
             return response.readEntity(byte[].class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
 
@@ -105,6 +116,8 @@ public class RequestREST implements Request {
         Response response = target.path("&password=" + local_password).request().post(Entity.entity(name, MediaType.APPLICATION_JSON));
         if(response.getStatus() == OK)
             return response.readEntity(String.class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
 
@@ -113,6 +126,8 @@ public class RequestREST implements Request {
         Response response = target.path(album.getName() + "&password=" + local_password).request().delete();
         if(response.getStatus() == OK)
             return response.readEntity(Boolean.class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return false;
     }
 
@@ -121,6 +136,8 @@ public class RequestREST implements Request {
         Response response = target.path(album.getName() + "/" +  name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
         if(response.getStatus() == OK)
             return response.readEntity(String.class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
 
@@ -129,6 +146,8 @@ public class RequestREST implements Request {
         Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().delete();
         if(response.getStatus() == OK)
             return response.readEntity(Boolean.class);
+        else if(response.getStatus() == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
         return false;
     }
 

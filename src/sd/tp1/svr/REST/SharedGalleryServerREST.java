@@ -43,8 +43,9 @@ public class SharedGalleryServerREST {
             List<String> lst = SharedGalleryFileSystemUtilities.getDirectoriesFromPath(basePath);
             if(lst != null)
                 return Response.ok(lst).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     @POST
@@ -55,8 +56,9 @@ public class SharedGalleryServerREST {
         if(password.equalsIgnoreCase(local_password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album)))
                 return Response.ok(album).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     @GET
@@ -67,8 +69,9 @@ public class SharedGalleryServerREST {
             List<String> lst = SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
             if(lst != null)
                 return Response.ok(lst).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     @DELETE
@@ -80,8 +83,9 @@ public class SharedGalleryServerREST {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created)
                 return Response.ok(true).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     @GET
@@ -92,8 +96,9 @@ public class SharedGalleryServerREST {
             byte [] data = SharedGalleryFileSystemUtilities.getDataFromPicture(basePath, album, picture);
             if(data != null)
                 return Response.ok(data).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     @POST
@@ -102,10 +107,12 @@ public class SharedGalleryServerREST {
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password, byte [] data) {
         if(password.equalsIgnoreCase(local_password)) {
-            if(picture.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data)))
-                return Response.ok(picture).build();
+            String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
+            if(new_name != null && picture.equalsIgnoreCase(new_name))
+                return Response.ok(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     @DELETE
@@ -116,8 +123,9 @@ public class SharedGalleryServerREST {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created)
                 return Response.ok(true).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     public static void main(String[] args) throws Exception {

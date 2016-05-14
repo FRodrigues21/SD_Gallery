@@ -22,7 +22,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private SharedGalleryServerDiscovery discovery;
 
 	private static final long REFRESH_TIME = 5000; // Time between refresh
-	private static final long RETRY_TIME = 5000; // Time between trying to run the method again
+	private static final long RETRY_TIME = 2000; // Time between trying to run the method again
 	private static final int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
 
 	private static final int MAX_CACHE_CAPACITY = 8; // Cache maximum number of entries
@@ -139,6 +139,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public byte[] getPictureData(Album album, Picture picture) {
+
+		System.out.println("[ CLIENT ] Cache current size: " + cache.size());
+
 		byte [] data;
 		boolean executed;
 
@@ -147,6 +150,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 		String key = album.getName() + "_" + picture.getName();
 		if(cache.containsKey(key) && timeBetween(cache.get(key).getCreation(), System.currentTimeMillis()) < MAX_CACHE_TIME) {
+			System.out.println("[ CLIENT ] Fetching picture data from cache: " + key);
 			return cache.get(album.getName() + "_" + picture.getName()).getData();
 		}
 		else {
@@ -155,18 +159,24 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			if(cache.containsKey(key))
 				cache.remove(key);
 
+
+
 			// Retrieve cache again
 			for(Request e : discovery.getServers().values()) {
 				executed = false;
 				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 					try {
+						System.out.println("[ CLIENT ] Fetching picture data from server " + e.getAddress() + " : " + picture.getName());
 						data = e.getPictureData(album, picture);
 						if (data != null && data.length > 1) {
 							SharedPicture cached_picture = new SharedPicture(picture.getName());
 							cached_picture.setData(data);
 							cache.put(album.getName() + '_' + picture.getName(), cached_picture);
+							System.out.println("[ CLIENT ] Fetched picture data from server: " + picture.getName() + "with size: " + data.length + " bytes");
 							return data;
 						}
+						else
+							System.out.println("[ CLIENT ] Fetched data from picture " + picture.getName() + " is null");
 						executed = true;
 					} catch (RuntimeException ex) {
 						if (e.getTries() == MAX_RETRIES + 1)
@@ -261,7 +271,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
-					if (picture.getName().equalsIgnoreCase(name)) {
+					if (picture.getName() != null) {
 						current_picturelist.add(picture.getName());
 						return picture;
 					}
