@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,8 +48,7 @@ public class SharedGalleryFileSystemUtilities {
      * @return the data of the picture from the directory album from basePath or null
      */
     public static byte [] getDataFromPicture(File basePath, String album, String picture) {
-        String [] extension = {"jpeg", "png", "jpg" };
-        for(String ext : extension) {
+        for(String ext : EXTENSIONS) {
             File filePath = new File(basePath + "/" + album + "/" + picture + "." + ext);
             if(filePath.exists() && filePath.isFile())
                 return new FilePicture(filePath).getData();
@@ -66,8 +64,11 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static String createDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
-        if(dirPath.mkdir())
+        if(dirPath.mkdir()) {
+            new SharedGalleryFileMetadata(album, null, basePath + "/" + album);
             return new FileAlbum(dirPath).getName();
+        }
+
         return null;
     }
 
@@ -95,6 +96,7 @@ public class SharedGalleryFileSystemUtilities {
         if(!filePath.exists()) {
             try {
                 Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
+                new SharedGalleryFileMetadata(album, picture, basePath + "/" + album + "/" + removeExtension(picture));
                 return new FilePicture(filePath).getName();
             } catch (IOException e) {
                 return null;
@@ -111,8 +113,12 @@ public class SharedGalleryFileSystemUtilities {
      * @return true if the pictures was deleted or false otherwise
      */
     public static Boolean deletePicture(File basePath, String album, String picture) {
-        File filePath = new File(basePath + "/" + album + "/" + picture);
-        return filePath.exists() && filePath.isFile() && filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+        for(String ext : EXTENSIONS) {
+            File filePath = new File(basePath + "/" + album + "/" + picture + "." + ext);
+            if(filePath.exists() && filePath.isFile())
+                return filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+        }
+        return false;
     }
 
     // Provided by teachers
