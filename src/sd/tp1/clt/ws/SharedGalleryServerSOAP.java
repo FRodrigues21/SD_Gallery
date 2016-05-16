@@ -27,18 +27,7 @@ public interface SharedGalleryServerSOAP {
 
     /**
      * 
-     * @return
-     *     returns java.util.List<java.lang.String>
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getListOfAlbums", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbums")
-    @ResponseWrapper(localName = "getListOfAlbumsResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbumsResponse")
-    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsResponse")
-    public List<String> getListOfAlbums();
-
-    /**
-     * 
+     * @param arg1
      * @param arg0
      * @return
      *     returns java.util.List<java.lang.String>
@@ -50,10 +39,13 @@ public interface SharedGalleryServerSOAP {
     @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfPicturesRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfPicturesResponse")
     public List<String> getListOfPictures(
         @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1);
 
     /**
      * 
+     * @param arg2
      * @param arg1
      * @param arg0
      * @return
@@ -68,25 +60,13 @@ public interface SharedGalleryServerSOAP {
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
         @WebParam(name = "arg1", targetNamespace = "")
-        String arg1);
+        String arg1,
+        @WebParam(name = "arg2", targetNamespace = "")
+        String arg2);
 
     /**
      * 
-     * @param arg0
-     * @return
-     *     returns java.lang.String
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "createAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbum")
-    @ResponseWrapper(localName = "createAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbumResponse")
-    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumResponse")
-    public String createAlbum(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
-
-    /**
-     * 
+     * @param arg1
      * @param arg0
      * @return
      *     returns java.lang.Boolean
@@ -98,10 +78,13 @@ public interface SharedGalleryServerSOAP {
     @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/deleteAlbumRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/deleteAlbumResponse")
     public Boolean deleteAlbum(
         @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1);
 
     /**
      * 
+     * @param arg3
      * @param arg2
      * @param arg1
      * @param arg0
@@ -119,10 +102,31 @@ public interface SharedGalleryServerSOAP {
         @WebParam(name = "arg1", targetNamespace = "")
         String arg1,
         @WebParam(name = "arg2", targetNamespace = "")
-        byte[] arg2);
+        byte[] arg2,
+        @WebParam(name = "arg3", targetNamespace = "")
+        String arg3);
 
     /**
      * 
+     * @param arg1
+     * @param arg0
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "createAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbum")
+    @ResponseWrapper(localName = "createAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbumResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumResponse")
+    public String createAlbum(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1);
+
+    /**
+     * 
+     * @param arg2
      * @param arg1
      * @param arg0
      * @return
@@ -137,6 +141,20 @@ public interface SharedGalleryServerSOAP {
         @WebParam(name = "arg0", targetNamespace = "")
         String arg0,
         @WebParam(name = "arg1", targetNamespace = "")
-        String arg1);
+        String arg1,
+        @WebParam(name = "arg2", targetNamespace = "")
+        String arg2);
+
+    /**
+     * 
+     * @return
+     *     returns java.util.List<java.lang.String>
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getListOfAlbums", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbums")
+    @ResponseWrapper(localName = "getListOfAlbumsResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbumsResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsResponse")
+    public List<String> getListOfAlbums();
 
 }

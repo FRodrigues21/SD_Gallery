@@ -17,7 +17,7 @@ public class SharedGallery extends Application {
 	private GalleryWindow window;
 	
 	public SharedGallery() throws IOException {
-		System.out.println("LOCAL PASSWORD:");
+		System.out.println("LOCAL PASSWORD: ");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		window = new GalleryWindow(new SharedGalleryContentProvider(reader.readLine()));
 	}	

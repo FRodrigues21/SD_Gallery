@@ -37,6 +37,7 @@ public class RequestREST implements Request {
     private String local_password;
 
     private static final int OK = Response.Status.OK.getStatusCode();
+    private static final int CREATED = Response.Status.CREATED.getStatusCode();
     private static final int UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
     private static final int NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
     private static final int INTERNAL_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
@@ -114,7 +115,7 @@ public class RequestREST implements Request {
     @Override
     public String createAlbum(String name) {
         Response response = target.path("&password=" + local_password).request().post(Entity.entity(name, MediaType.APPLICATION_JSON));
-        if(response.getStatus() == OK)
+        if(response.getStatus() == CREATED)
             return response.readEntity(String.class);
         else if(response.getStatus() == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
@@ -134,7 +135,7 @@ public class RequestREST implements Request {
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
         Response response = target.path(album.getName() + "/" +  name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
-        if(response.getStatus() == OK)
+        if(response.getStatus() == CREATED)
             return response.readEntity(String.class);
         else if(response.getStatus() == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");

@@ -39,7 +39,7 @@ public class SharedGalleryServerREST {
     @Path("password={password}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfAlbums(@PathParam("password") String password) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             List<String> lst = SharedGalleryFileSystemUtilities.getDirectoriesFromPath(basePath);
             if(lst != null)
                 return Response.ok(lst).build();
@@ -53,9 +53,9 @@ public class SharedGalleryServerREST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createAlbum(@PathParam("password") String password, String album) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album)))
-                return Response.ok(album).build();
+                return Response.status(Response.Status.CREATED).entity(album).build();
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -65,7 +65,7 @@ public class SharedGalleryServerREST {
     @Path("/{album}&password={password}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             List<String> lst = SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
             if(lst != null)
                 return Response.ok(lst).build();
@@ -79,7 +79,7 @@ public class SharedGalleryServerREST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteAlbum(@PathParam("album") String album, @PathParam("password") String password) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created)
                 return Response.ok(true).build();
@@ -92,7 +92,7 @@ public class SharedGalleryServerREST {
     @Path("/{album}/{picture}&password={password}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getPictureData(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             byte [] data = SharedGalleryFileSystemUtilities.getDataFromPicture(basePath, album, picture);
             if(data != null)
                 return Response.ok(data).build();
@@ -106,10 +106,10 @@ public class SharedGalleryServerREST {
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password, byte [] data) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
             if(new_name != null && picture.equalsIgnoreCase(new_name))
-                return Response.ok(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
+                return Response.status(Response.Status.CREATED).entity(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -119,13 +119,17 @@ public class SharedGalleryServerREST {
     @Path("/{album}/{picture}&password={password}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
-        if(password.equalsIgnoreCase(local_password)) {
+        if(validate(password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created)
                 return Response.ok(true).build();
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
+    private static boolean validate(String password) {
+        return password.equalsIgnoreCase(local_password);
     }
 
     public static void main(String[] args) throws Exception {
