@@ -63,7 +63,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                             if(!servers.containsKey(url) && url.contains("http")) {
                                 if (url.contains("SOAP")) {
                                     System.err.println("ADDED: " + url);
-                                    servers.put(url, new RequestSOAP(url));
+                                    servers.put(url, new RequestSOAP(url, local_password));
                                 }
                                 else if(url.contains("REST")) {
                                     System.err.println("ADDED: " + url);

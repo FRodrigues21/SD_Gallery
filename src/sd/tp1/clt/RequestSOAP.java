@@ -16,10 +16,12 @@ public class RequestSOAP implements Request {
     private SharedGalleryServerSOAP server; // Stub from the SOAP server
     private String url; // Url of the SOAP server
     private int tries; // Number of failed tries to make a request/method
+    private String local_password;
 
-    public RequestSOAP(String url) {
+    public RequestSOAP(String url, String password) {
         this.tries = 0;
         this.url = url;
+        this.local_password = password;
         try {
             server = new SharedGalleryServerSOAPService(new URL(url)).getSharedGalleryServerSOAPPort();
         } catch (MalformedURLException | InaccessibleWSDLException e) {
@@ -40,27 +42,27 @@ public class RequestSOAP implements Request {
     }
 
     public List<String> getListOfPictures(GalleryContentProvider.Album album) throws RuntimeException{
-        return server.getListOfPictures(album.getName());
+        return server.getListOfPictures(album.getName(), local_password);
     }
 
     public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) throws RuntimeException {
-        return server.getPictureData(album.getName(), picture.getName());
+        return server.getPictureData(album.getName(), picture.getName(), local_password);
     }
 
     public String createAlbum(String name) throws RuntimeException {
-        return server.createAlbum(name);
+        return server.createAlbum(name, local_password);
     }
 
     public Boolean deleteAlbum(GalleryContentProvider.Album album) throws RuntimeException {
-        return server.deleteAlbum(album.getName());
+        return server.deleteAlbum(album.getName(), local_password);
     }
 
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte [] data) throws RuntimeException {
-        return server.uploadPicture(album.getName(), name, data);
+        return server.uploadPicture(album.getName(), name, data, local_password);
     }
 
     public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) throws RuntimeException {
-        return server.deletePicture(album.getName(), picture.getName());
+        return server.deletePicture(album.getName(), picture.getName(), local_password);
     }
 
 }
