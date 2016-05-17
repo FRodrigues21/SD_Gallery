@@ -7,6 +7,9 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.sun.net.httpserver.HttpServer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.json.simple.JSONArray;
@@ -55,6 +58,7 @@ public class SharedGalleryServerPROXY {
     private static final File KEYSTORE = new File("./server.jks");
 
     private static Map<String, SharedGalleryImgurAlbum> index_albums;
+    private static KafkaProducer<String, String> producer;
 
     @GET
     @Path("password={password}")
@@ -140,6 +144,7 @@ public class SharedGalleryServerPROXY {
                     if(index_albums.containsKey(album))
                         title = album + "_" + id;
                     index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
+                    sendToConsumers("Albuns", "Update at " + System.nanoTime());
                     return Response.status(Response.Status.CREATED).entity(title).build();
                 }
             }
@@ -171,6 +176,7 @@ public class SharedGalleryServerPROXY {
                 int status = albumRes.getCode();
                 if(status == OK) {
                     index_albums.remove(album);
+                    sendToConsumers("Albuns", "Update at " + System.nanoTime());
                     return Response.ok(true).build();
                 }
                 else if(status == INTERNAL_ERROR)
@@ -324,6 +330,7 @@ public class SharedGalleryServerPROXY {
                             title = picture + "_" + id;
                         if(title != null && (title.contains(".jpg") || title.contains(".jpeg") || title.contains(".png")))
                             title = SharedGalleryFileSystemUtilities.removeExtension(title);
+                        sendToConsumers(album, "Update at " + System.nanoTime());
                         return Response.status(status).entity(title).build();
                     }
                 }
@@ -353,6 +360,7 @@ public class SharedGalleryServerPROXY {
                 int status = pictureRes.getCode();
                 if(status == OK) {
                     index_albums.get(album).removePicture(picture);
+                    sendToConsumers(album, "Update at " + System.nanoTime());
                     return Response.ok(true).build();
                 }
                 else if(status == INTERNAL_ERROR)
@@ -361,6 +369,11 @@ public class SharedGalleryServerPROXY {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
+    private void sendToConsumers(String topic, String event) {
+        System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
+        producer.send(new ProducerRecord<>(topic, event));
     }
 
     private static boolean validate(String password) {
@@ -423,12 +436,26 @@ public class SharedGalleryServerPROXY {
 
         sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
+        // Event dessimination - Producer
+
+        Properties env = System.getProperties();
+        Properties props = new Properties();
+
+        props.put("zk.connect", env.getOrDefault("zk.connect", "localhost:2181/"));
+        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", "localhost:9092"));
+        props.put("log.retention.ms", 5000);
+
+        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        props.put("key.serializer", StringSerializer.class.getName());
+        props.put("value.serializer", StringSerializer.class.getName());
+
+        producer = new KafkaProducer<>(props);
+
         HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, config, sslContext);
 
         System.err.println("SharedGalleryServerREST: Started @ " + baseUri.toString());
 
         new Thread(new SharedGalleryClientDiscovery(baseUri.toString())).start();
-
     }
 
 }

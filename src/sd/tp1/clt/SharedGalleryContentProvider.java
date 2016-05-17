@@ -6,7 +6,11 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.Properties;
 
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import sd.tp1.gui.GalleryContentProvider;
 
 import sd.tp1.gui.Gui;
@@ -21,7 +25,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private SharedGalleryServerDiscovery discovery;
 
-	private static final long REFRESH_TIME = 5000; // Time between refresh
+	private static final long REFRESH_TIME = 10000; // Time between refresh
 	private static final long RETRY_TIME = 2000; // Time between trying to run the method again
 	private static final int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
 
@@ -34,6 +38,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private List<String> current_picturelist = null; // Current pictures list (kinda a cache)
 	private List<String> current_albumlist = null; // Current album list (kinda a cache)
 	private String local_password;
+
+	private KafkaConsumer<String, String> consumer;
 
 	SharedGalleryContentProvider(String password) {
 		local_password = password;
@@ -163,17 +169,17 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				executed = false;
 				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 					try {
-						System.out.println("[ CLIENT ] Fetching picture data from server " + e.getAddress() + " : " + picture.getName());
+						//System.out.println("[ CLIENT ] Fetching picture data from server " + e.getAddress() + " : " + picture.getName());
 						data = e.getPictureData(album, picture);
 						if (data != null && data.length > 1) {
 							SharedPicture cached_picture = new SharedPicture(picture.getName());
 							cached_picture.setData(data);
 							cache.put(album.getName() + '_' + picture.getName(), cached_picture);
-							System.out.println("[ CLIENT ] Fetched picture data from server: " + picture.getName() + "with size: " + data.length + " bytes");
+							//System.out.println("[ CLIENT ] Fetched picture data from server: " + picture.getName() + "with size: " + data.length + " bytes");
 							return data;
 						}
-						else
-							System.out.println("[ CLIENT ] Fetched data from picture " + picture.getName() + " is null");
+						/*else
+							System.out.println("[ CLIENT ] Fetched data from picture " + picture.getName() + " is null");*/
 						executed = true;
 					} catch (RuntimeException ex) {
 						if (e.getTries() == MAX_RETRIES + 1)
@@ -270,6 +276,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
 					if (picture.getName() != null) {
 						current_picturelist.add(picture.getName());
+						gui.updateAlbum(album);
 						return picture;
 					}
 					executed = true;
@@ -320,10 +327,70 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		return false;
 	}
 
+	private void detectChanges() {
+		new Thread(() -> {
+			try {
+				Properties props = new Properties();
+				props.put("bootstrap.servers", "localhost:9092");
+				props.put("group.id", "consumer-tutorial" + System.nanoTime());
+				props.put("key.deserializer", StringDeserializer.class.getName());
+				props.put("value.deserializer", StringDeserializer.class.getName());
+
+				consumer = new KafkaConsumer<>(props);
+				consumer.subscribe(Arrays.asList("Albuns"));
+
+				for(;;) {
+					System.out.println("Consuming...");
+					ConsumerRecords<String, String> records = consumer.poll(1000);
+					records.forEach( r -> {
+						String topic = r.topic();
+						String event = r.value();
+						System.out.println("[ CLIENT ] Recieved topic: " + topic + " and event: " + event);
+						if(topic.equalsIgnoreCase("Albuns"))
+							updateAlbuns();
+						else if(current_albumlist.contains(topic))
+							updateAlbum(topic, event);
+					});
+				}
+			} finally {
+				consumer.close();
+			}
+		}).start();
+	}
+
+	private void updateAlbuns() {
+		System.out.println("[ CLIENT ] Updated Albuns!");
+		List<String> lst_current = new ArrayList<>();
+		List<String> lst_possible;
+		lst_possible = getListOfAlbums().stream().map(f -> f.getName()).collect(Collectors.toList());
+		if(!listsAreEqual(lst_current, lst_possible)) {
+			current_albumlist = lst_possible;
+			consumer.subscribe(current_albumlist);
+			System.out.println("[ CLIENT ] New album list: ");
+			for(String album : current_albumlist)
+				System.out.println(album);
+			System.out.println();
+			gui.updateAlbums();
+		}
+	}
+
+	private void updateAlbum(String album, String event) {
+		System.out.println("[ CLIENT ] Updated album " + album);
+		List<String> lst_current;
+		List<String> lst_possible;
+		current_album = new SharedAlbum(album);
+		lst_current = current_picturelist;
+		lst_possible = getListOfPictures(current_album).stream().map(f -> f.getName()).collect(Collectors.toList());
+		if(!listsAreEqual(lst_current, lst_possible)) {
+			current_picturelist = lst_possible;
+			gui.updateAlbum(current_album);
+		}
+	}
+
 	/**
 	 * Thread that runs along with the client checking if there are any changes in the albums or pictures list
 	 */
-	private void detectChanges() {
+	/*private void detectChanges() {
 		Thread t = new Thread(() -> {
             while(true) {
                 try {
@@ -355,7 +422,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
             }
         });
 		t.start();
-	}
+	}*/
 
 	/**
 	 * Sorts the lists and checks if the lists are equal
@@ -388,7 +455,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
      */
 	private void findServers() throws IOException {
 		if(discovery == null) {
-			discovery = new SharedGalleryServerDiscovery(local_password);
+			discovery = new SharedGalleryServerDiscovery(local_password, gui);
 			new Thread(discovery).start();
 		}
 	}

@@ -173,6 +173,10 @@ public class SharedGalleryServerREST {
         System.err.println("SharedGalleryServerREST: Started @ " + baseUri.toString());
 
         new Thread(new SharedGalleryClientDiscovery(baseUri.toString())).start();
+
+
+
+
     }
 
 }

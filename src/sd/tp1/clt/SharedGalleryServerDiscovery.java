@@ -1,5 +1,7 @@
 package sd.tp1.clt;
 
+import sd.tp1.gui.Gui;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.Map;
@@ -16,11 +18,13 @@ public class SharedGalleryServerDiscovery implements Runnable{
     private InetAddress client_address = null; // Client address
     private MulticastSocket client_socket = null; // Socket Multicast
     private String local_password;
+    private Gui gui;
 
     private Map<String,Request> servers = new ConcurrentHashMap<>(); // Map containing servers where the key is the server address and the value an object that handles the requests
 
-    public SharedGalleryServerDiscovery(String password) {
+    public SharedGalleryServerDiscovery(String password, Gui gui) {
         local_password = password;
+        this.gui = gui;
     }
 
     /**
@@ -69,6 +73,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestREST(url, local_password));
                                 }
+                                gui.updateAlbums();
                             }
                         }
                     } catch (IOException e) {
