@@ -228,7 +228,7 @@ public class SharedGalleryServerPROXY {
                                 index_albums.get(album).addPicture(title, id);
                         }
                     }
-                    if(index_albums.get(album).getPictures().keySet().size() > 0) {
+                    if(!index_albums.get(album).getPictures().isEmpty()) {
                         lst.addAll(index_albums.get(album).getPictures().keySet());
                         return Response.ok(lst).build();
                     }
@@ -330,8 +330,9 @@ public class SharedGalleryServerPROXY {
                             title = picture + "_" + id;
                         if(title != null && (title.contains(".jpg") || title.contains(".jpeg") || title.contains(".png")))
                             title = SharedGalleryFileSystemUtilities.removeExtension(title);
+                        index_albums.get(album).addPicture(title, id);
                         sendToConsumers(album, "Update at " + System.nanoTime());
-                        return Response.status(status).entity(title).build();
+                        return Response.status(Response.Status.CREATED).entity(title).build();
                     }
                 }
                 else if(status == INTERNAL_ERROR)

@@ -164,8 +164,7 @@ public class SharedGalleryServerREST {
         System.out.println("LOCAL PASSWORD: ");
         local_password = reader.readLine();
 
-        if(!basePath.exists())
-            basePath.mkdir();
+        basePath.mkdir();
 
         URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9090).build();
         ResourceConfig config = new ResourceConfig();
@@ -207,10 +206,6 @@ public class SharedGalleryServerREST {
         System.err.println("SharedGalleryServerREST: Started @ " + baseUri.toString());
 
         new Thread(new SharedGalleryClientDiscovery(baseUri.toString())).start();
-
-
-
-
     }
 
 }

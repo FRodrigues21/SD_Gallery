@@ -135,6 +135,7 @@ public class RequestREST implements Request {
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
         Response response = target.path(album.getName() + "/" +  name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
+        System.out.println("Upload status: " + response.getStatus());
         if(response.getStatus() == CREATED)
             return response.readEntity(String.class);
         else if(response.getStatus() == UNAUTHORIZED)

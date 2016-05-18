@@ -32,10 +32,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private static final int MAX_CACHE_TIME = 2; // Cache maximum time in minutes
 
 	private SharedGalleryContentCache<String, SharedPicture> cache;
+	private Map<String, List<String>> current_data;
 
-	private Album current_album = null; // Album being viewed by the client
-	private List<String> current_picturelist = null; // Current pictures list (kinda a cache)
-	private List<String> current_albumlist = null; // Current album list (kinda a cache)
 	private String local_password;
 
 	private Properties props;
@@ -51,8 +49,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			System.err.println("CLIENT ERROR: CLIENT HAS NO ADDRESS! SO IT'S UNREACHABLE");
 		}
 		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
-		current_albumlist = new ArrayList<>();
-		current_picturelist = new ArrayList<>();
+		current_data = new HashMap<>();
 		setupConsumer();
 	}
 
@@ -78,9 +75,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
-		if(current_albumlist.isEmpty())
-			updateAlbuns();
-		return current_albumlist.stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+		if(current_data.isEmpty())
+			return updateAlbuns().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+		return current_data.keySet().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
 	private List<String> getListOfAlbumsFromServers() {
@@ -118,9 +115,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		if(current_picturelist.isEmpty())
-			updateAlbum(album, "");
-		return current_picturelist.stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		if(current_data.get(album.getName()).isEmpty())
+			return updateAlbum(album, "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
 	private List<String> getListOfPicturesFromServer(Album album) {
@@ -177,7 +174,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			if(cache.containsKey(key))
 				cache.remove(key);
 
-			// Retrieve cache again
+			// Retrieve cache again
 			for(Request e : discovery.getServers().values()) {
 				executed = false;
 				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
@@ -216,7 +213,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	@Override
 	public Album createAlbum(String name) {
-		if(current_albumlist.contains(name) || name.isEmpty() || discovery.getServers().isEmpty())
+		if(current_data.containsKey(name) || name.isEmpty() || discovery.getServers().isEmpty())
 			return null;
 		boolean executed = false;
 		int server = (int)(Math.random() * discovery.getServers().size());
@@ -228,7 +225,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				if (received != null && received.equalsIgnoreCase(name))
 				{
 					SharedAlbum album = new SharedAlbum(name);
-					current_albumlist.add(album.getName());
+					current_data.put(album.getName(), new ArrayList<>());
 					return album;
 				}
 				executed = true;
@@ -251,14 +248,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public void deleteAlbum(Album album) {
 		boolean executed;
-		if((current_album != null && current_album.getName().equalsIgnoreCase(album.getName())))
-			current_album = null;
 		for(Request e : discovery.getServers().values()) {
 			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
-					if(e.deleteAlbum(album) && current_albumlist.contains(album.getName()))
-						current_albumlist.remove(album.getName());
+					if(e.deleteAlbum(album) && current_data.containsKey(album.getName()))
+						current_data.remove(album.getName());
 					executed = true;
 				} catch (RuntimeException e1) {
 					if (e.getTries() == MAX_RETRIES + 1)
@@ -279,17 +274,18 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public Picture uploadPicture(Album album, String name, byte [] data) {
-		if(current_picturelist.contains(name) || discovery.getServers().isEmpty())
+		List<String> current_pictureList = current_data.get(album.getName());
+		if(current_pictureList.contains(name) || discovery.getServers().isEmpty())
 			return null;
 		boolean executed;
 		for(Request e : discovery.getServers().values()) {
 			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
-					Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
-					if (picture.getName() != null) {
-						current_picturelist.add(picture.getName());
-						return picture;
+					String picture = e.uploadPicture(album, name, data);
+					if (picture != null) {
+						current_data.get(album.getName()).add(picture);
+						return new SharedPicture(picture);
 					}
 					executed = true;
 				} catch (RuntimeException ex) {
@@ -320,7 +316,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					if(e.deletePicture(album, picture)) {
-						current_picturelist.remove(picture.getName());
+						current_data.get(album.getName()).remove(picture.getName());
 						return true;
 					}
 					executed = true;
@@ -355,8 +351,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		new Thread(() -> {
 			try {
 				for(;;) {
-					System.out.println("Consuming... " + consumer.subscription().contains("alb"));
-
 					ConsumerRecords<String, String> records = consumer.poll(1000);
 					records.forEach( r -> {
 						String topic = r.topic();
@@ -374,26 +368,30 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		}).start();
 	}
 
-	private void updateAlbuns() {
+	public List<String> updateAlbuns() {
 		System.out.println("[ CLIENT ] Updated Albuns!");
-		List<String> lst_current = current_albumlist;
+		List<String> lst_current = new ArrayList<>(current_data.keySet());
 		List<String> lst_possible = getListOfAlbumsFromServers();
 		if(!listsAreEqual(lst_current, lst_possible)) {
-			current_albumlist = lst_possible;
-			current_topicList.addAll(current_albumlist);
+			current_data.clear();
+			for(String album : lst_possible)
+				current_data.put(album, new ArrayList<>());
+			current_topicList.addAll(current_data.keySet());
 			//consumer.subscribe(current_topicList);
 			gui.updateAlbums();
 		}
+		return lst_possible;
 	}
 
-	private void updateAlbum(Album album, String event) {
+	private List<String> updateAlbum(Album album, String event) {
 		System.out.println("[ CLIENT ] Updated album " + album.getName());
-		List<String> lst_current = current_picturelist;
+		List<String> lst_current = current_data.get(album.getName());
 		List<String> lst_possible = getListOfPicturesFromServer(album);
 		if(!listsAreEqual(lst_current, lst_possible)) {
-			current_picturelist = lst_possible;
-			gui.updateAlbum(current_album);
+			current_data.put(album.getName(), lst_possible);
+			gui.updateAlbum(album);
 		}
+		return lst_possible;
 	}
 
 	/**
@@ -427,7 +425,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
      */
 	private void findServers() throws IOException {
 		if(discovery == null) {
-			discovery = new SharedGalleryServerDiscovery(local_password, gui);
+			discovery = new SharedGalleryServerDiscovery(local_password, this);
 			new Thread(discovery).start();
 		}
 	}

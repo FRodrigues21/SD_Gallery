@@ -18,13 +18,13 @@ public class SharedGalleryServerDiscovery implements Runnable{
     private InetAddress client_address = null; // Client address
     private MulticastSocket client_socket = null; // Socket Multicast
     private String local_password;
-    private Gui gui;
+    private SharedGalleryContentProvider provider;
 
     private Map<String,Request> servers = new ConcurrentHashMap<>(); // Map containing servers where the key is the server address and the value an object that handles the requests
 
-    public SharedGalleryServerDiscovery(String password, Gui gui) {
+    public SharedGalleryServerDiscovery(String password, SharedGalleryContentProvider provider) {
         local_password = password;
-        this.gui = gui;
+        this.provider = provider;
     }
 
     /**
@@ -73,7 +73,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestREST(url, local_password));
                                 }
-                                gui.updateAlbums();
+                                provider.updateAlbuns();
                             }
                         }
                     } catch (IOException e) {
