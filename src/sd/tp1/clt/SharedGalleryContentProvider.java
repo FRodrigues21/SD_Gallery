@@ -25,7 +25,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private SharedGalleryServerDiscovery discovery;
 
-	private static final long REFRESH_TIME = 10000; // Time between refresh
 	private static final long RETRY_TIME = 2000; // Time between trying to run the method again
 	private static final int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
 
@@ -39,9 +38,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private List<String> current_albumlist = null; // Current album list (kinda a cache)
 	private String local_password;
 
+	private Properties props;
 	private KafkaConsumer<String, String> consumer;
+	private List<String> current_topicList;
 
 	SharedGalleryContentProvider(String password) {
+
 		local_password = password;
 		try {
 			System.out.println("ShareGalleryContentProvider: Started @ " + InetAddress.getLocalHost().getHostAddress());
@@ -51,6 +53,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
 		current_albumlist = new ArrayList<>();
 		current_picturelist = new ArrayList<>();
+		setupConsumer();
 	}
 
 	/**
@@ -61,8 +64,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		if(this.gui == null) {
 			this.gui = gui;
 			try {
+				detectChanges();
 				findServers(); // Finds servers
-				detectChanges(); // Detects changes
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -75,8 +78,14 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
-		boolean executed;
+		if(current_albumlist.isEmpty())
+			updateAlbuns();
+		return current_albumlist.stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+	}
+
+	private List<String> getListOfAlbumsFromServers() {
 		List<String> lst = new ArrayList<>();
+		boolean executed;
 		for (Request e : discovery.getServers().values()) {
 			executed = false;
 			for(int i = 0; i < MAX_RETRIES && !executed; i++) {
@@ -100,7 +109,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				}
 			}
 		}
-		return lst.stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+		return lst;
 	}
 
 	/**
@@ -109,7 +118,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		current_album = album;
+		if(current_picturelist.isEmpty())
+			updateAlbum(album, "");
+		return current_picturelist.stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+	}
+
+	private List<String> getListOfPicturesFromServer(Album album) {
 		boolean executed;
 		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
@@ -134,8 +148,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				}
 			}
 		}
-		current_picturelist = lst;
-		return lst.stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		return lst;
 	}
 
 	/**
@@ -276,7 +289,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					Picture picture = new SharedPicture(e.uploadPicture(album, name, data));
 					if (picture.getName() != null) {
 						current_picturelist.add(picture.getName());
-						gui.updateAlbum(album);
 						return picture;
 					}
 					executed = true;
@@ -327,20 +339,24 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		return false;
 	}
 
+	private void setupConsumer() {
+		props = new Properties();
+		props.put("bootstrap.servers", "localhost:9092");
+		props.put("group.id", "consumer-tutorial" + System.nanoTime());
+		props.put("key.deserializer", StringDeserializer.class.getName());
+		props.put("value.deserializer", StringDeserializer.class.getName());
+		consumer = new KafkaConsumer<>(props);
+		current_topicList = new ArrayList<>();
+		current_topicList.add("Albuns");
+		consumer.subscribe(current_topicList);
+	}
+
 	private void detectChanges() {
 		new Thread(() -> {
 			try {
-				Properties props = new Properties();
-				props.put("bootstrap.servers", "localhost:9092");
-				props.put("group.id", "consumer-tutorial" + System.nanoTime());
-				props.put("key.deserializer", StringDeserializer.class.getName());
-				props.put("value.deserializer", StringDeserializer.class.getName());
-
-				consumer = new KafkaConsumer<>(props);
-				consumer.subscribe(Arrays.asList("Albuns"));
-
 				for(;;) {
-					System.out.println("Consuming...");
+					System.out.println("Consuming... " + consumer.subscription().contains("alb"));
+
 					ConsumerRecords<String, String> records = consumer.poll(1000);
 					records.forEach( r -> {
 						String topic = r.topic();
@@ -348,8 +364,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						System.out.println("[ CLIENT ] Recieved topic: " + topic + " and event: " + event);
 						if(topic.equalsIgnoreCase("Albuns"))
 							updateAlbuns();
-						else if(current_albumlist.contains(topic))
-							updateAlbum(topic, event);
+						else
+							updateAlbum(new SharedAlbum(topic), event);
 					});
 				}
 			} finally {
@@ -360,69 +376,25 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private void updateAlbuns() {
 		System.out.println("[ CLIENT ] Updated Albuns!");
-		List<String> lst_current = new ArrayList<>();
-		List<String> lst_possible;
-		lst_possible = getListOfAlbums().stream().map(f -> f.getName()).collect(Collectors.toList());
+		List<String> lst_current = current_albumlist;
+		List<String> lst_possible = getListOfAlbumsFromServers();
 		if(!listsAreEqual(lst_current, lst_possible)) {
 			current_albumlist = lst_possible;
-			consumer.subscribe(current_albumlist);
-			System.out.println("[ CLIENT ] New album list: ");
-			for(String album : current_albumlist)
-				System.out.println(album);
-			System.out.println();
+			current_topicList.addAll(current_albumlist);
+			//consumer.subscribe(current_topicList);
 			gui.updateAlbums();
 		}
 	}
 
-	private void updateAlbum(String album, String event) {
-		System.out.println("[ CLIENT ] Updated album " + album);
-		List<String> lst_current;
-		List<String> lst_possible;
-		current_album = new SharedAlbum(album);
-		lst_current = current_picturelist;
-		lst_possible = getListOfPictures(current_album).stream().map(f -> f.getName()).collect(Collectors.toList());
+	private void updateAlbum(Album album, String event) {
+		System.out.println("[ CLIENT ] Updated album " + album.getName());
+		List<String> lst_current = current_picturelist;
+		List<String> lst_possible = getListOfPicturesFromServer(album);
 		if(!listsAreEqual(lst_current, lst_possible)) {
 			current_picturelist = lst_possible;
 			gui.updateAlbum(current_album);
 		}
 	}
-
-	/**
-	 * Thread that runs along with the client checking if there are any changes in the albums or pictures list
-	 */
-	/*private void detectChanges() {
-		Thread t = new Thread(() -> {
-            while(true) {
-                try {
-                    List<String> lst_current;
-                    List<String> lst_possible;
-
-					// Viewing albums so try to update albums (if there are changes)
-					lst_current = current_albumlist;
-					lst_possible = getListOfAlbums().stream().map(f -> f.getName()).collect(Collectors.toList());
-					if(!listsAreEqual(lst_current, lst_possible)) {
-						current_albumlist = lst_possible;
-						gui.updateAlbums();
-					}
-
-					// Viewing an album so try to update pictures (if there are changes)
-					if(current_album != null) {
-						lst_current = current_picturelist;
-						lst_possible = getListOfPictures(current_album).stream().map(f -> f.getName()).collect(Collectors.toList());
-						if(!listsAreEqual(lst_current, lst_possible)) {
-							current_picturelist = lst_possible;
-							gui.updateAlbum(current_album);
-						}
-					}
-
-                    Thread.sleep(REFRESH_TIME);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-		t.start();
-	}*/
 
 	/**
 	 * Sorts the lists and checks if the lists are equal

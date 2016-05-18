@@ -1,6 +1,9 @@
 package sd.tp1.svr.REST;
 
 import com.sun.net.httpserver.HttpServer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import sd.tp1.svr.SharedGalleryFileSystemUtilities;
@@ -19,6 +22,7 @@ import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Francisco Rodrigues 42727
@@ -30,6 +34,8 @@ public class SharedGalleryServerREST {
     private static File basePath = new File("./FileServerREST"); // Path where the server files are
     private static String local_password;
     private static final File KEYSTORE = new File("./server.jks");
+
+    private static KafkaProducer<String, String> producer;
 
     /**
      * The methods from this class act the same way as the ones from REQUEST interface, but instead of null return an error status code
@@ -54,8 +60,10 @@ public class SharedGalleryServerREST {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createAlbum(@PathParam("password") String password, String album) {
         if(validate(password)) {
-            if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album)))
+            if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
+                sendToConsumers("Albuns", "Updated at " + System.nanoTime());
                 return Response.status(Response.Status.CREATED).entity(album).build();
+            }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -81,8 +89,10 @@ public class SharedGalleryServerREST {
     public Response deleteAlbum(@PathParam("album") String album, @PathParam("password") String password) {
         if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
-            if(created)
+            if(created) {
+                sendToConsumers("Albuns", "Updated at " + System.nanoTime());
                 return Response.ok(true).build();
+            }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -108,8 +118,10 @@ public class SharedGalleryServerREST {
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password, byte [] data) {
         if(validate(password)) {
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
-            if(new_name != null && picture.equalsIgnoreCase(new_name))
+            if(new_name != null && picture.equalsIgnoreCase(new_name)) {
+                sendToConsumers(album, "Updated at " + System.nanoTime());
                 return Response.status(Response.Status.CREATED).entity(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
+            }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -121,11 +133,18 @@ public class SharedGalleryServerREST {
     public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
         if(validate(password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
-            if(created)
+            if(created) {
+                sendToConsumers(album, "Updated at " + System.nanoTime());
                 return Response.ok(true).build();
+            }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
+    private void sendToConsumers(String topic, String event) {
+        System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
+        producer.send(new ProducerRecord<>(topic, event));
     }
 
     private static boolean validate(String password) {
@@ -167,6 +186,21 @@ public class SharedGalleryServerREST {
         tmf.init(keyStore);
 
         sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+
+        // Event dessimination - Producer
+
+        Properties env = System.getProperties();
+        Properties props = new Properties();
+
+        props.put("zk.connect", env.getOrDefault("zk.connect", "localhost:2181/"));
+        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", "localhost:9092"));
+        props.put("log.retention.ms", 5000);
+
+        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        props.put("key.serializer", StringSerializer.class.getName());
+        props.put("value.serializer", StringSerializer.class.getName());
+
+        producer = new KafkaProducer<>(props);
 
         HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, config, sslContext);
 
