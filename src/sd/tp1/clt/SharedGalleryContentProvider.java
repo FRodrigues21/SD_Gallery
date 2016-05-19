@@ -356,7 +356,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						String topic = r.topic();
 						String event = r.value();
 						System.out.println("[ CLIENT ] Recieved topic: " + topic + " and event: " + event);
-						if(topic.equalsIgnoreCase("Albuns"))
+						if(topic.equalsIgnoreCase("Albuns") && !current_data.containsKey(event))
 							updateAlbums();
 						else if(current_data.containsKey(event))
 							updateAlbum(new SharedAlbum(event), event);

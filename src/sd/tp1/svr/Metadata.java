@@ -35,7 +35,9 @@ public class Metadata {
     }
 
     public void addOperation(long cnt, long id, String event) {
-        operations.add(new Clock(cnt, id, event));
+        lastUpdate(cnt, id, event);
+        operations.add(updated);
+        System.out.println("[ " + data + " ] " + "(" + cnt + " , " + id + ")");
     }
 
 }

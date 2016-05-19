@@ -83,9 +83,10 @@ public class RequestREST implements Request {
     @Override
     public List<String> getListOfAlbums() {
         Response response = target.path("password="+local_password).request().accept(MediaType.APPLICATION_JSON).get();
-        if(response.getStatus() == OK)
+        int status = response.getStatus();
+        if(status == OK)
             return response.readEntity(ArrayList.class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
@@ -93,9 +94,10 @@ public class RequestREST implements Request {
     @Override
     public List<String> getListOfPictures(GalleryContentProvider.Album album) {
         Response response = target.path(album.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_JSON).get();
-        if(response.getStatus() == OK)
+        int status = response.getStatus();
+        if(status == OK)
             return response.readEntity(ArrayList.class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
@@ -105,9 +107,10 @@ public class RequestREST implements Request {
         Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
         System.out.println("Path: " + album.getName() + "/" + picture.getName() + "&password=" + local_password);
         System.out.println("Status: " + response.getStatus() + " " + INTERNAL_ERROR);
-        if(response.getStatus() == OK)
+        int status = response.getStatus();
+        if(status == OK)
             return response.readEntity(byte[].class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
@@ -115,9 +118,10 @@ public class RequestREST implements Request {
     @Override
     public String createAlbum(String name) {
         Response response = target.path("&password=" + local_password).request().post(Entity.entity(name, MediaType.APPLICATION_JSON));
-        if(response.getStatus() == CREATED)
+        int status = response.getStatus();
+        if(status == CREATED)
             return response.readEntity(String.class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
@@ -125,9 +129,10 @@ public class RequestREST implements Request {
     @Override
     public Boolean deleteAlbum(GalleryContentProvider.Album album) {
         Response response = target.path(album.getName() + "&password=" + local_password).request().delete();
-        if(response.getStatus() == OK)
+        int status = response.getStatus();
+        if(status == OK)
             return response.readEntity(Boolean.class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return false;
     }
@@ -135,10 +140,10 @@ public class RequestREST implements Request {
     @Override
     public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
         Response response = target.path(album.getName() + "/" +  name + "&password=" + local_password).request().post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
-        System.out.println("Upload status: " + response.getStatus());
-        if(response.getStatus() == CREATED)
+        int status = response.getStatus();
+        if(status == CREATED)
             return response.readEntity(String.class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return null;
     }
@@ -146,9 +151,10 @@ public class RequestREST implements Request {
     @Override
     public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
         Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().delete();
-        if(response.getStatus() == OK)
+        int status = response.getStatus();
+        if(status == OK)
             return response.readEntity(Boolean.class);
-        else if(response.getStatus() == UNAUTHORIZED)
+        else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
         return false;
     }
