@@ -73,7 +73,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestREST(url, local_password));
                                 }
-                                provider.updateAlbuns();
+                                provider.updateAlbums();
                             }
                         }
                     } catch (IOException e) {

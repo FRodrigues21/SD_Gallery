@@ -65,7 +65,6 @@ public class SharedGalleryFileSystemUtilities {
     public static String createDirectory(File basePath, String album) {
         File dirPath = new File(basePath + "/" + album);
         if(dirPath.mkdir()) {
-            new SharedGalleryFileMetadata(album, null, basePath + "/" + album);
             return new FileAlbum(dirPath).getName();
         }
 
@@ -96,7 +95,6 @@ public class SharedGalleryFileSystemUtilities {
         if(!filePath.exists()) {
             try {
                 Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
-                new SharedGalleryFileMetadata(album, picture, basePath + "/" + album + "/" + removeExtension(picture));
                 return new FilePicture(filePath).getName();
             } catch (IOException e) {
                 return null;

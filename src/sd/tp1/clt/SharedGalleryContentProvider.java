@@ -76,7 +76,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public List<Album> getListOfAlbums() {
 		if(current_data.isEmpty())
-			return updateAlbuns().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+			return updateAlbums().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 		return current_data.keySet().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
@@ -357,9 +357,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						String event = r.value();
 						System.out.println("[ CLIENT ] Recieved topic: " + topic + " and event: " + event);
 						if(topic.equalsIgnoreCase("Albuns"))
-							updateAlbuns();
-						else
-							updateAlbum(new SharedAlbum(topic), event);
+							updateAlbums();
+						else if(current_data.containsKey(event))
+							updateAlbum(new SharedAlbum(event), event);
 					});
 				}
 			} finally {
@@ -368,7 +368,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		}).start();
 	}
 
-	public List<String> updateAlbuns() {
+	public List<String> updateAlbums() {
 		System.out.println("[ CLIENT ] Updated Albuns!");
 		List<String> lst_current = new ArrayList<>(current_data.keySet());
 		List<String> lst_possible = getListOfAlbumsFromServers();

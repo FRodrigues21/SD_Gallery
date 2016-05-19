@@ -31,10 +31,6 @@ public class SharedGalleryImgurAlbum {
         return pictures.get(name);
     }
 
-    public void clear() {
-        pictures.clear();
-    }
-
     public void addPicture(String name, String id) {
         if(!pictures.containsKey(name)) {
             System.out.println("[ PROXY ] Added picture " + name + " with id " + id);

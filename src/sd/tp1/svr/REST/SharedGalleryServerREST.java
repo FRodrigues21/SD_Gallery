@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import sd.tp1.svr.Metadata;
 import sd.tp1.svr.SharedGalleryFileSystemUtilities;
 import sd.tp1.svr.SharedGalleryClientDiscovery;
 
@@ -13,6 +14,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.*;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -23,6 +25,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Francisco Rodrigues 42727
@@ -35,7 +38,11 @@ public class SharedGalleryServerREST {
     private static String local_password;
     private static final File KEYSTORE = new File("./server.jks");
 
+    private static long cnt;
+    private static long id;
+
     private static KafkaProducer<String, String> producer;
+    private static ConcurrentHashMap<String, Metadata> metadata;
 
     /**
      * The methods from this class act the same way as the ones from REQUEST interface, but instead of null return an error status code
@@ -61,6 +68,9 @@ public class SharedGalleryServerREST {
     public Response createAlbum(@PathParam("password") String password, String album) {
         if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
+                if(!metadata.contains(album))
+                    metadata.put(album, new Metadata(album));
+                metadata.get(album).addOperation(cnt++, id, "created");
                 sendToConsumers("Albuns", "Updated at " + System.nanoTime());
                 return Response.status(Response.Status.CREATED).entity(album).build();
             }
@@ -90,6 +100,9 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created) {
+                if(!metadata.contains(album))
+                    metadata.put(album, new Metadata(album));
+                metadata.get(album).addOperation(cnt++, id, "deleted");
                 sendToConsumers("Albuns", "Updated at " + System.nanoTime());
                 return Response.ok(true).build();
             }
@@ -119,7 +132,7 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
             if(new_name != null && picture.equalsIgnoreCase(new_name)) {
-                sendToConsumers(album, "Updated at " + System.nanoTime());
+                sendToConsumers("Albuns", album);
                 return Response.status(Response.Status.CREATED).entity(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -134,7 +147,7 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created) {
-                sendToConsumers(album, "Updated at " + System.nanoTime());
+                sendToConsumers("Album", album);
                 return Response.ok(true).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -152,6 +165,10 @@ public class SharedGalleryServerREST {
     }
 
     public static void main(String[] args) throws Exception {
+
+        metadata = new ConcurrentHashMap<>();
+        cnt = 0;
+        id = System.nanoTime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
