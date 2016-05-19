@@ -1,14 +1,9 @@
 package sd.tp1.svr;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,28 +11,42 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Metadata {
 
-    private String data;
-    private Clock updated;
+    private String type;
+    private String name;
+    private Operation last;
+    private List<Operation> operations;
+    private Map<String, Metadata> images;
 
-    List<Clock> operations;
-
-    public Metadata(String data) {
-        this.data = data;
+    public Metadata(String type, String name) {
+        this.type = type;
+        this.name = name;
         operations = new LinkedList<>();
+        images = new HashMap<>();
     }
 
-    public Clock getLastUpdate() {
-        return updated;
-    }
-
-    public void lastUpdate(long cnt, long id, String event) {
-        updated = new Clock(cnt, id, event);
+    public Operation getLastUpdate() {
+        return last;
     }
 
     public void addOperation(long cnt, long id, String event) {
-        lastUpdate(cnt, id, event);
-        operations.add(updated);
-        System.out.println("[ " + data + " ] " + "(" + cnt + " , " + id + ")");
+        last = new Operation(cnt, id, event);
+        operations.add(last);
+        String result = String.format("[ METADATA ] %s: %s at (%d , %d)", name, event, cnt, id);
+        System.out.println(result);
+    }
+
+    public boolean hasImage(String name) {
+        return images.containsKey(name);
+    }
+
+    public void addImage(String name) {
+        if(!hasImage(name))
+            images.put(name, new Metadata("picture", name));
+    }
+
+    public void addImageOperation(String image, long cnt, long id, String event) {
+        last = new Operation(cnt, id, event);
+        images.get(image).addOperation(cnt, id, event);
     }
 
 }

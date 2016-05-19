@@ -1,6 +1,7 @@
 package sd.tp1.clt;
 
 import sd.tp1.gui.Gui;
+import sd.tp1.svr.SyncSOAP;
 
 import java.io.IOException;
 import java.net.*;
@@ -54,8 +55,8 @@ public class SharedGalleryServerDiscovery implements Runnable{
         }
 
         // Receives packets from servers/clients that are a FileServer
-        Thread r = new Thread(() -> {
-            while(true) {
+        new Thread(() -> {
+            for(;;) {
                 DatagramPacket reply;
                 byte [] buffer = new byte[65536];
                 reply = new DatagramPacket(buffer, buffer.length);
@@ -73,19 +74,19 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                     System.err.println("ADDED: " + url);
                                     servers.put(url, new RequestREST(url, local_password));
                                 }
-                                provider.updateAlbums();
+                                if(provider != null)
+                                    provider.updateAlbums();
                             }
                         }
                     } catch (IOException e) {
                         //System.out.println("CLIENT ERROR: No packet received!");
                     }
                 }
-        });
-        r.start();
+        }).start();
 
         // Sends packets to multicast asking who is a FileServer
-        Thread s = new Thread(() -> {
-                while (true) {
+        new Thread(() -> {
+                for (;;) {
                     try {
                         DatagramPacket request;
                         String data_req = "FileServer";
@@ -97,8 +98,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                         System.err.println("CLIENT ERROR: Could not send packet to servers!");
                     }
                 }
-        });
-        s.start();
+        }).start();
 
     }
 

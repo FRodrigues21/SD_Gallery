@@ -116,7 +116,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
 		if(current_data.get(album.getName()).isEmpty())
-			return updateAlbum(album, "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+			return updateAlbum(album).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
@@ -359,7 +359,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						if(topic.equalsIgnoreCase("Albuns") && !current_data.containsKey(event))
 							updateAlbums();
 						else if(current_data.containsKey(event))
-							updateAlbum(new SharedAlbum(event), event);
+							updateAlbum(new SharedAlbum(event));
 					});
 				}
 			} finally {
@@ -380,10 +380,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			//consumer.subscribe(current_topicList);
 			gui.updateAlbums();
 		}
-		return lst_possible;
+		return lst_current;
 	}
 
-	private List<String> updateAlbum(Album album, String event) {
+	private List<String> updateAlbum(Album album) {
 		System.out.println("[ CLIENT ] Updated album " + album.getName());
 		List<String> lst_current = current_data.get(album.getName());
 		List<String> lst_possible = getListOfPicturesFromServer(album);
@@ -391,7 +391,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			current_data.put(album.getName(), lst_possible);
 			gui.updateAlbum(album);
 		}
-		return lst_possible;
+		return lst_current;
 	}
 
 	/**

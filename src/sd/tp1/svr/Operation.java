@@ -3,13 +3,13 @@ package sd.tp1.svr;
 /**
  * Created by franciscorodrigues on 19/05/16.
  */
-public class Clock implements Comparable<Clock> {
+public class Operation implements Comparable<Operation> {
 
     private long id;
     private long cnt;
     private String event;
 
-    public Clock(long cnt, long id, String event) {
+    public Operation(long cnt, long id, String event) {
         this.cnt = cnt;
         this.id = id;
         this.event = event;
@@ -28,7 +28,7 @@ public class Clock implements Comparable<Clock> {
     }
 
     @Override
-    public int compareTo(Clock o) {
+    public int compareTo(Operation o) {
         if(this.getCnt() < o.getCnt() || (this.getCnt() == o.getCnt() && this.getId() < this.getId()))
             return 1;
         else if(this.getCnt() > o.getCnt())

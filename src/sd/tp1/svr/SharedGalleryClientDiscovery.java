@@ -40,23 +40,26 @@ public class SharedGalleryClientDiscovery implements Runnable {
         }
 
         // Waits for packets containing FileServer question and replies with IP address
-        while(true) {
-            try {
-                byte [] buffer = new byte[65536];
-                DatagramPacket incoming = new DatagramPacket(buffer, buffer.length);
-                server_socket.receive(incoming);
-                if(incoming.getLength() > 0) {
-                    String incoming_message = new String(incoming.getData(), 0, incoming.getLength());
-                    if (incoming_message.contains("FileServer"))
-                        sendIPToClient(address_s, incoming.getAddress(), incoming.getPort());
+        new Thread(() -> {
+            for(;;) {
+                try {
+                    byte [] buffer = new byte[65536];
+                    DatagramPacket incoming = new DatagramPacket(buffer, buffer.length);
+                    server_socket.receive(incoming);
+                    if(incoming.getLength() > 0) {
+                        String incoming_message = new String(incoming.getData(), 0, incoming.getLength());
+                        if (incoming_message.contains("FileServer"))
+                            sendIPToClient(address_s, incoming.getAddress(), incoming.getPort());
+                    }
+                    else
+                        Thread.sleep(5000);
                 }
-                else
-                    Thread.sleep(5000);
+                catch (IOException | InterruptedException e) {
+                    System.out.println("SERVER ERROR: No packet received!");
+                }
             }
-            catch (IOException | InterruptedException e) {
-                System.out.println("SERVER ERROR: No packet received!");
-            }
-        }
+        }).start();
+
     }
 
     // Send server IP Address to client
