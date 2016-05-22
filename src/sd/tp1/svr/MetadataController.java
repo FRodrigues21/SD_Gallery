@@ -20,9 +20,13 @@ public class MetadataController {
         return metadata;
     }
 
-    public void add(String path, long id, String event) {
-        metadata.put(path, new Metadata(path));
+    public void add(String path, long id, String event, String ext) {
+        metadata.put(path, new Metadata(path, ext));
         metadata.get(path).addOperation(id, event);
+    }
+
+    public void addFrom(String path, Metadata data) {
+        metadata.put(path, data);
     }
 
     public void addOp(String path, long id, String event) {

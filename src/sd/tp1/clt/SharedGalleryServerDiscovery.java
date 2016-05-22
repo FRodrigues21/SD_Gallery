@@ -1,8 +1,5 @@
 package sd.tp1.clt;
 
-import sd.tp1.gui.Gui;
-import sd.tp1.svr.SyncSOAP;
-
 import java.io.IOException;
 import java.net.*;
 import java.util.Map;

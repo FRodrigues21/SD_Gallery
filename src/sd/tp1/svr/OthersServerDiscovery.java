@@ -72,7 +72,7 @@ public class OthersServerDiscovery implements Runnable {
                         if(!servers.containsKey(url) && url.contains("http") && !url.contains(this.url)) {
                             if (url.contains("SOAP")) {
                                 System.err.println("ADDED SERVER: " + url);
-                                servers.put(url, new SyncSOAP(url, local_password));
+                                //servers.put(url, new SyncSOAP(url, local_password));
                             }
                             else if(url.contains("REST")) {
                                 System.err.println("ADDED SERVER: " + url);

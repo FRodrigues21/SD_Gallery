@@ -92,13 +92,19 @@ public class SyncREST implements Sync {
     }
 
     @Override
-    public List<String> getListOfPictures(GalleryContentProvider.Album album) {
+    public List<String> getListOfPictures(String album) {
         return null;
     }
 
     @Override
-    public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
-        return new byte[0];
+    public byte[] getPictureData(String album, String picture) {
+        Response response = target.path(album + "/" + picture + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
+        int status = response.getStatus();
+        if(status == OK)
+            return response.readEntity(byte[].class);
+        else if(status == UNAUTHORIZED)
+            System.out.println("CLIENT ERROR: Wrong password!");
+        return null;
     }
 
     @Override
@@ -107,17 +113,17 @@ public class SyncREST implements Sync {
     }
 
     @Override
-    public Boolean deleteAlbum(GalleryContentProvider.Album album) {
+    public Boolean deleteAlbum(String album) {
         return null;
     }
 
     @Override
-    public String uploadPicture(GalleryContentProvider.Album album, String name, byte[] data) {
+    public String uploadPicture(String album, String name, byte[] data) {
         return null;
     }
 
     @Override
-    public Boolean deletePicture(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
+    public Boolean deletePicture(String album, String picture) {
         return null;
     }
 

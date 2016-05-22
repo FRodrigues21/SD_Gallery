@@ -1,6 +1,7 @@
 package sd.tp1.svr.REST;
 
 import com.sun.net.httpserver.HttpServer;
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -71,7 +72,7 @@ public class SharedGalleryServerREST {
 
                 // Metadata
                 String path = "/" + album;
-                metadata_controller.add(path, id, "create");
+                metadata_controller.add(path, id, "create", "null");
                 System.out.println("METADATA: " + metadata_controller.metadata(path));
 
                 //Kafka
@@ -147,7 +148,7 @@ public class SharedGalleryServerREST {
 
                 // Metadata
                 String path = "/" + album + "/" + no_ext;
-                metadata_controller.add(path, id, "create");
+                metadata_controller.add(path, id, "create", picture);
                 System.out.println("METADATA: " + metadata_controller.metadata(path));
 
                 // Kafka
@@ -211,7 +212,7 @@ public class SharedGalleryServerREST {
                 Sync request = discovery.getServer();
                 if(request != null) {
                     content = request.sync();
-                    compareMetadata(content);
+                    compareMetadata(request, content);
                 }
                 try {
                     Thread.sleep(10000);
@@ -223,10 +224,87 @@ public class SharedGalleryServerREST {
         }).start();
     }
 
-    private static void compareMetadata(List<String> replica_content) {
-        for(String metadata : replica_content)
+    private static void compareMetadata(Sync request, List<String> replica_content) {
+        for(String metadata : replica_content) {
             System.out.println("[ RECIEVING ] " + metadata);
-        System.out.println("tentou comparar");
+            String [] data = metadata.split(" ");
+            String path = data[0];
+            Metadata tmp = new Metadata(path, Integer.parseInt(data[1]), Long.parseLong(data[2]), data[3], data[4]);
+            String album = albumFromMetadata(path);
+            String event = tmp.getEvent();
+            if(metadata_controller.getMetadata().containsKey(path)) { // Tem metadata
+                Metadata local = (Metadata)metadata_controller.getMetadata().get(path);
+                if(local.getCnt() < tmp.getCnt()) {
+                    if(isAlbumMetadata(path)) {
+                        metadata_controller.addFrom(path, tmp);
+                        if(tmp.getEvent().equalsIgnoreCase("delete")) {
+                            SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+                        }
+                        else
+                            SharedGalleryFileSystemUtilities.createDirectory(basePath, album);
+                    }
+                    else {
+                        String picture = pictureFromMetadata(path);
+                        String ext = data[4];
+                        metadata_controller.addFrom(path, tmp);
+                        if(tmp.getEvent().equalsIgnoreCase("delete"))
+                            SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+                        else {
+                            SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
+                        }
+                    }
+                }
+                else if(local.getCnt() == tmp.getCnt()) {
+                    if(!local.getEvent().equalsIgnoreCase(tmp.getEvent())) {
+                        if(isAlbumMetadata(path)) {
+                            if(tmp.getEvent().equalsIgnoreCase("delete")) {
+                                metadata_controller.addFrom(path, tmp);
+                                SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+                            }
+                        }
+                        else {
+                            String picture = albumFromMetadata(path);
+                            if(tmp.getEvent().equalsIgnoreCase("delete")) {
+                                metadata_controller.addFrom(path, tmp);
+                                SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+                            }
+                        }
+                    }
+                }
+            }
+            else { // Não tem metadata
+                if(isAlbumMetadata(path)) {
+                    metadata_controller.addFrom(path, tmp);
+                    if(event.equalsIgnoreCase("create"))
+                        SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
+                }
+                else {
+                    String picture = pictureFromMetadata(path);
+                    String ext = data[4];
+                    metadata_controller.addFrom(path, tmp);
+                    if(event.equalsIgnoreCase("create")) {
+                        SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isAlbumMetadata(String name) {
+        int count = name.length() - name.replaceAll("/", "").length();
+        if(count == 2)
+            return false;
+        return true;
+    }
+
+    private static String pictureFromMetadata(String meta) {
+        String [] result = meta.split("/");
+        return result[2];
+    }
+
+    private static String albumFromMetadata(String meta) {
+        String [] result = meta.split("/");
+        return result[1];
     }
 
     private static boolean validate(String password) {
@@ -239,6 +317,9 @@ public class SharedGalleryServerREST {
         id = System.nanoTime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.println("PATH");
+        basePath = new File("./FileServerREST" + reader.readLine());
 
         System.out.println("SERVER PORT");
         int port = Integer.parseInt(reader.readLine());
