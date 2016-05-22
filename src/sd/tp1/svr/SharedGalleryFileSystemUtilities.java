@@ -34,7 +34,7 @@ public class SharedGalleryFileSystemUtilities {
      * @return a list containing the names of the pictures from the directory album from basePath
      */
     public static List<String> getPicturesFromDirectory(File basePath, String album) {
-        File dirPath = new File(basePath + "/" + album);
+        File dirPath = new File(basePath + File.separator + album);
         if(dirPath.exists() && dirPath.isDirectory())
             return Arrays.asList(dirPath.listFiles()).stream().filter(f -> isPicture(f)).map(f -> f.getName().substring(0, f.getName().lastIndexOf('.'))).collect(Collectors.toList());
        return null;
@@ -49,7 +49,7 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static byte [] getDataFromPicture(File basePath, String album, String picture) {
         for(String ext : EXTENSIONS) {
-            File filePath = new File(basePath + "/" + album + "/" + picture + "." + ext);
+            File filePath = new File(basePath + File.separator + album + File.separator + picture + "." + ext);
             if(filePath.exists() && filePath.isFile())
                 return new FilePicture(filePath).getData();
         }
@@ -63,7 +63,7 @@ public class SharedGalleryFileSystemUtilities {
      * @return the name of the directory if was created or null otherwise
      */
     public static String createDirectory(File basePath, String album) {
-        File dirPath = new File(basePath + "/" + album);
+        File dirPath = new File(basePath + File.separator + album);
         if(dirPath.mkdir()) {
             return new FileAlbum(dirPath).getName();
         }
@@ -78,7 +78,7 @@ public class SharedGalleryFileSystemUtilities {
      * @return true if the directory was deleted or false otherwise
      */
     public static Boolean deleteDirectory(File basePath, String album) {
-        File dirPath = new File(basePath + "/" + album);
+        File dirPath = new File(basePath + File.separator + album);
         return dirPath.exists() && dirPath.isDirectory() && dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
     }
 
@@ -91,7 +91,7 @@ public class SharedGalleryFileSystemUtilities {
      * @return the name of the picture if it was created or null otherwise
      */
     public static String createPicture(File basePath, String album, String picture, byte [] data) {
-        File filePath = new File(basePath + "/" + album + "/" + picture);
+        File filePath = new File(basePath + File.separator + album + File.separator + picture);
         if(!filePath.exists()) {
             try {
                 Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
@@ -112,7 +112,7 @@ public class SharedGalleryFileSystemUtilities {
      */
     public static Boolean deletePicture(File basePath, String album, String picture) {
         for(String ext : EXTENSIONS) {
-            File filePath = new File(basePath + "/" + album + "/" + picture + "." + ext);
+            File filePath = new File(basePath + File.separator + album + File.separator + picture + File.separator + ext);
             if(filePath.exists() && filePath.isFile()) {
                 filePath.delete();
                 //return filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));

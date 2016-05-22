@@ -190,8 +190,8 @@ public class SharedGalleryServerREST {
     public Response sendMetadata(@PathParam("password") String password) {
         if(validate(password)) {
             List<String> current_metadata = new ArrayList<>();
-            for(Object metadata : metadata_controller.getMetadata().values()) {
-                String content = ((Metadata)metadata).converted();
+            for(Metadata metadata : ((ConcurrentHashMap<String, Metadata>)metadata_controller.getMetadata()).values()) {
+                String content = metadata.converted();
                 current_metadata.add(content);
                 System.out.println("[ SENDING ] " + content);
             }
@@ -313,7 +313,6 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        metadata_controller = new MetadataController();
         id = System.nanoTime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -378,6 +377,9 @@ public class SharedGalleryServerREST {
         new Thread(discovery).start();
 
         new Thread(new SharedGalleryClientDiscovery(baseUri.toString())).start();
+
+        metadata_controller = new MetadataController(basePath);
+        metadata_controller.load();
 
         fetchReplicaMetadata();
     }

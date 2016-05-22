@@ -3,7 +3,7 @@ package sd.tp1.svr;
 /**
  * Created by fxpro on 15/05/2016.
  */
-public class Metadata {
+public class Metadata implements java.io.Serializable {
 
     private int cnt;
     private long id;
