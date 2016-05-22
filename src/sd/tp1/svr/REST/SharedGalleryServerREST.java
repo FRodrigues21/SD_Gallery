@@ -7,10 +7,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import sd.tp1.clt.SharedGalleryServerDiscovery;
-import sd.tp1.svr.Metadata;
-import sd.tp1.svr.MetadataController;
-import sd.tp1.svr.SharedGalleryFileSystemUtilities;
-import sd.tp1.svr.SharedGalleryClientDiscovery;
+import sd.tp1.svr.*;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -23,6 +20,7 @@ import java.io.*;
 import java.net.*;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +41,7 @@ public class SharedGalleryServerREST {
 
     private static KafkaProducer<String, String> producer;
     private static MetadataController metadata_controller;
-    private static SharedGalleryServerDiscovery discovery;
+    private static OthersServerDiscovery discovery;
 
     /**
      * The methods from this class act the same way as the ones from REQUEST interface, but instead of null return an error status code
@@ -70,11 +68,15 @@ public class SharedGalleryServerREST {
     public Response createAlbum(@PathParam("password") String password, String album) {
         if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
+
+                // Metadata
                 String path = "/" + album;
-                metadata_controller.add(path);
-                metadata_controller.addOp(path, id, "create");
+                metadata_controller.add(path, id, "create");
                 System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                //Kafka
                 sendToConsumers("Albuns", album + "-create");
+
                 return Response.status(Response.Status.CREATED).entity(album).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -90,10 +92,15 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created) {
+
+                // Metadata
                 String path = "/" + album;
                 metadata_controller.addOp(path, id, "delete");
                 System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                //Kafka
                 sendToConsumers("Albuns", album + "-delete");
+
                 return Response.ok(true).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -137,11 +144,15 @@ public class SharedGalleryServerREST {
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
             if(new_name != null && picture.equalsIgnoreCase(new_name)) {
                 String no_ext = SharedGalleryFileSystemUtilities.removeExtension(picture);
+
+                // Metadata
                 String path = "/" + album + "/" + no_ext;
-                metadata_controller.add(path);
-                metadata_controller.addOp(path, id, "create");
+                metadata_controller.add(path, id, "create");
                 System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                // Kafka
                 sendToConsumers(album, no_ext + "-" + "create");
+
                 return Response.status(Response.Status.CREATED).entity(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -156,10 +167,15 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created) {
+
+                // Metadata
                 String path = "/" + album + "/" + picture;
                 metadata_controller.addOp(path, id, "delete");
                 System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                // Kafka
                 sendToConsumers(album, picture + "-" + "delete");
+
                 return Response.ok(true).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -167,9 +183,50 @@ public class SharedGalleryServerREST {
         return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
+    @GET
+    @Path("/metadata&password={password}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response sendMetadata(@PathParam("password") String password) {
+        if(validate(password)) {
+            List<String> current_metadata = new ArrayList<>();
+            for(Object metadata : metadata_controller.getMetadata().values()) {
+                String content = ((Metadata)metadata).converted();
+                current_metadata.add(content);
+                System.out.println("[ SENDING ] " + content);
+            }
+            return Response.ok(current_metadata).build();
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
     private void sendToConsumers(String topic, String event) {
         producer.send(new ProducerRecord<>(topic, event));
         System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
+    }
+
+    private static void fetchReplicaMetadata() {
+        new Thread(() -> {
+            for(;;) {
+                List<String> content = new ArrayList<>();
+                Sync request = discovery.getServer();
+                if(request != null) {
+                    content = request.sync();
+                    compareMetadata(content);
+                }
+                try {
+                    Thread.sleep(10000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private static void compareMetadata(List<String> replica_content) {
+        for(String metadata : replica_content)
+            System.out.println("[ RECIEVING ] " + metadata);
+        System.out.println("tentou comparar");
     }
 
     private static boolean validate(String password) {
@@ -183,6 +240,9 @@ public class SharedGalleryServerREST {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
+        System.out.println("SERVER PORT");
+        int port = Integer.parseInt(reader.readLine());
+
         System.out.println("JKS PASSWORD: ");
         char [] jks_password = reader.readLine().toCharArray();
 
@@ -194,7 +254,7 @@ public class SharedGalleryServerREST {
 
         basePath.mkdir();
 
-        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9090).build();
+        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(port).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerREST.class);
 
@@ -233,10 +293,12 @@ public class SharedGalleryServerREST {
 
         System.err.println("SharedGalleryServerREST: Started @ " + baseUri.toString());
 
-        /*discovery = new SharedGalleryServerDiscovery(local_password, null);
-        new Thread(discovery).start();*/
+        discovery = new OthersServerDiscovery(baseUri.toString(), local_password);
+        new Thread(discovery).start();
 
         new Thread(new SharedGalleryClientDiscovery(baseUri.toString())).start();
+
+        fetchReplicaMetadata();
     }
 
 }

@@ -1,5 +1,6 @@
 package sd.tp1.svr;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -8,14 +9,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MetadataController {
 
-    private static ConcurrentHashMap<String, Metadata> metadata;
+    private static Map<String, Metadata> metadata;
 
     public MetadataController() {
         metadata = new ConcurrentHashMap<>();
     }
 
-    public void add(String path) {
+
+    public Map getMetadata() {
+        return metadata;
+    }
+
+    public void add(String path, long id, String event) {
         metadata.put(path, new Metadata(path));
+        metadata.get(path).addOperation(id, event);
     }
 
     public void addOp(String path, long id, String event) {
@@ -24,7 +31,7 @@ public class MetadataController {
     }
 
     public String metadata(String path) {
-        return metadata.get(path).toString();
+        return metadata.get(path).converted();
     }
 
 }

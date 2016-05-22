@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Francisco Rodrigues 42727
  * Luis Abreu 43322
  */
-public class SharedGalleryServerDiscovery implements Runnable{
+public class SharedGalleryServerDiscovery implements Runnable {
 
     private String client_multicast = "224.1.2.8"; // Multicast IP
     private int client_port = 9000; // Multicast Port
