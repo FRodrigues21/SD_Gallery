@@ -144,7 +144,7 @@ public class SharedGalleryServerPROXY {
                     if(index_albums.containsKey(album))
                         title = album + "_" + id;
                     index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
-                    sendToConsumers("Albuns", "Update at " + System.nanoTime());
+                    sendToConsumers("Albuns", album + "-create");
                     return Response.status(Response.Status.CREATED).entity(title).build();
                 }
             }
@@ -176,7 +176,7 @@ public class SharedGalleryServerPROXY {
                 int status = albumRes.getCode();
                 if(status == OK) {
                     index_albums.remove(album);
-                    sendToConsumers("Albuns", "Update at " + System.nanoTime());
+                    sendToConsumers("Albuns", album + "-delete");
                     return Response.ok(true).build();
                 }
                 else if(status == INTERNAL_ERROR)
@@ -331,7 +331,7 @@ public class SharedGalleryServerPROXY {
                         if(title != null && (title.contains(".jpg") || title.contains(".jpeg") || title.contains(".png")))
                             title = SharedGalleryFileSystemUtilities.removeExtension(title);
                         index_albums.get(album).addPicture(title, id);
-                        sendToConsumers(album, "Update at " + System.nanoTime());
+                        sendToConsumers(album, title + "-" + "create");
                         return Response.status(Response.Status.CREATED).entity(title).build();
                     }
                 }
@@ -361,7 +361,7 @@ public class SharedGalleryServerPROXY {
                 int status = pictureRes.getCode();
                 if(status == OK) {
                     index_albums.get(album).removePicture(picture);
-                    sendToConsumers(album, "Update at " + System.nanoTime());
+                    sendToConsumers(album, picture + "-" + "delete");
                     return Response.ok(true).build();
                 }
                 else if(status == INTERNAL_ERROR)

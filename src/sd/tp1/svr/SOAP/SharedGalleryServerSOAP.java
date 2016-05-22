@@ -24,7 +24,7 @@ import javax.xml.ws.Endpoint;
 @WebService
 public class SharedGalleryServerSOAP {
 
-    private static File basePath = new File("./FileServerSOAP");
+    private static File basePath;
     private static String local_password;
 
     private static long id;
@@ -258,16 +258,24 @@ public class SharedGalleryServerSOAP {
 
     public static void main(String args[]) throws Exception {
 
+        int port;
+
         id = System.nanoTime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.println("PATH: ");
+        basePath = new File("./FileServerSOAP" + reader.readLine());
+
+        System.out.println("PORT: ");
+        port = Integer.parseInt(reader.readLine());
 
         System.out.println("LOCAL PASSWORD: ");
         local_password = reader.readLine();
 
         basePath.mkdir();
 
-        String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8080/FileServerSOAP";
+        String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/FileServerSOAP";
         Endpoint.publish(address_s, new SharedGalleryServerSOAP());
 
         // Event dessimination - Producer
