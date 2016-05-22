@@ -61,7 +61,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		if(this.gui == null) {
 			this.gui = gui;
 			try {
-				detectChanges();
 				findServers(); // Finds servers
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -106,6 +105,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				}
 			}
 		}
+		current_topicList.addAll(lst);
 		return lst;
 	}
 
@@ -115,12 +115,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
+		System.out.println("UPDATE INTERFACE OF ALBUM");
 		if(current_data.get(album.getName()).isEmpty())
-			return updateAlbum(album).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+			return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
-	private List<String> getListOfPicturesFromServer(Album album) {
+	private List<String> getListOfPicturesFromServer(String album) {
 		boolean executed;
 		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
@@ -128,7 +129,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				List<String> tmp;
 				try {
-					tmp = e.getListOfPictures(album);
+					tmp = e.getListOfPictures(new SharedAlbum(album));
 					if (tmp != null) {
 						lst.removeAll(tmp);
 						lst.addAll(tmp);
@@ -345,21 +346,24 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		current_topicList = new ArrayList<>();
 		current_topicList.add("Albuns");
 		consumer.subscribe(current_topicList);
+		detectChanges();
 	}
 
 	private void detectChanges() {
 		new Thread(() -> {
 			try {
 				for(;;) {
+					consumer.subscribe(current_topicList);
 					ConsumerRecords<String, String> records = consumer.poll(1000);
 					records.forEach( r -> {
 						String topic = r.topic();
 						String event = r.value();
 						System.out.println("[ CLIENT ] Recieved topic: " + topic + " and event: " + event);
-						if(topic.equalsIgnoreCase("Albuns") && !current_data.containsKey(event))
+						String [] message = event.split("-");
+						if(topic.equalsIgnoreCase("Albuns") && !current_data.containsKey(topic))
 							updateAlbums();
-						else if(current_data.containsKey(event))
-							updateAlbum(new SharedAlbum(event));
+						else if(current_data.containsKey(topic))
+							updateAlbum(topic, message[0], message[1]);
 					});
 				}
 			} finally {
@@ -377,21 +381,30 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			for(String album : lst_possible)
 				current_data.put(album, new ArrayList<>());
 			current_topicList.addAll(current_data.keySet());
-			//consumer.subscribe(current_topicList);
 			gui.updateAlbums();
 		}
 		return lst_current;
 	}
 
-	private List<String> updateAlbum(Album album) {
-		System.out.println("[ CLIENT ] Updated album " + album.getName());
-		List<String> lst_current = current_data.get(album.getName());
-		List<String> lst_possible = getListOfPicturesFromServer(album);
-		if(!listsAreEqual(lst_current, lst_possible)) {
-			current_data.put(album.getName(), lst_possible);
-			gui.updateAlbum(album);
+	private List<String> updateAlbum(String album, String picture, String event) {
+		System.out.println("[ CLIENT ] Updated album " + album);
+		if(event.equalsIgnoreCase("delete")) {
+			System.out.println("[ CLIENT ] Deleted picture " + picture);
+			current_data.get(album).remove(picture);
+			String key = album + "_" + picture;
+			if(cache.containsKey(key))
+				cache.remove(key);
+			gui.updateAlbum(new SharedAlbum(album));
 		}
-		return lst_current;
+		else {
+			List<String> lst_current = current_data.get(album);
+			List<String> lst_possible = getListOfPicturesFromServer(album);
+			if(!listsAreEqual(lst_current, lst_possible)) {
+				current_data.put(album, lst_possible);
+				gui.updateAlbum(new SharedAlbum(album));
+			}
+		}
+		return current_data.get(album);
 	}
 
 	/**

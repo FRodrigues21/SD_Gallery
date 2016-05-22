@@ -70,10 +70,6 @@ public class SharedGalleryServerREST {
     public Response createAlbum(@PathParam("password") String password, String album) {
         if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
-                if(!metadata.contains(album)) {
-                    metadata.put(album, new Metadata("album", album));
-                    metadata.get(album).addOperation(cnt++, id, "create");
-                }
                 sendToConsumers("Albuns", "Updated at " + System.nanoTime());
                 return Response.status(Response.Status.CREATED).entity(album).build();
             }
@@ -104,7 +100,6 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created) {
-                metadata.get(album).addOperation(cnt++, id, "delete");
                 sendToConsumers("Albuns", "Updated at " + System.nanoTime());
                 return Response.ok(true).build();
             }
@@ -132,12 +127,9 @@ public class SharedGalleryServerREST {
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadPicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password, byte [] data) {
         if(validate(password)) {
-            System.out.println("EXECUTED");
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
             if(new_name != null && picture.equalsIgnoreCase(new_name)) {
-                metadata.get(album).addImage(picture);
-                metadata.get(album).addImageOperation(picture, cnt++, id, "create");
-                sendToConsumers("Albuns", album);
+                sendToConsumers(album, SharedGalleryFileSystemUtilities.removeExtension(picture) + "-" + "create");
                 return Response.status(Response.Status.CREATED).entity(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -152,8 +144,7 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created) {
-                metadata.get(album).addImageOperation(picture, cnt++, id, "delete");
-                sendToConsumers("Album", album);
+                sendToConsumers(album, SharedGalleryFileSystemUtilities.removeExtension(picture) + "-" + "delete");
                 return Response.ok(true).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -162,8 +153,8 @@ public class SharedGalleryServerREST {
     }
 
     private void sendToConsumers(String topic, String event) {
-        System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
         producer.send(new ProducerRecord<>(topic, event));
+        System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
     }
 
     private static boolean validate(String password) {
@@ -228,8 +219,8 @@ public class SharedGalleryServerREST {
 
         System.err.println("SharedGalleryServerREST: Started @ " + baseUri.toString());
 
-        discovery = new SharedGalleryServerDiscovery(local_password, null);
-        new Thread(discovery).start();
+        /*discovery = new SharedGalleryServerDiscovery(local_password, null);
+        new Thread(discovery).start();*/
 
         new Thread(new SharedGalleryClientDiscovery(baseUri.toString())).start();
     }

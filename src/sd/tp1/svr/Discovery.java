@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by franciscorodrigues on 19/05/16.
  */
-public class FriendsServersDiscovery {
+public class Discovery {
 
     private String client_multicast = "224.1.2.8"; // Multicast IP
     private int client_port = 9000; // Multicast Port
@@ -25,7 +25,7 @@ public class FriendsServersDiscovery {
 
     private Map<String,Sync> servers = new ConcurrentHashMap<>(); // Map containing servers where the key is the server address and the value an object that handles the requests
 
-    public FriendsServersDiscovery(String password) {
+    public Discovery(String password) {
         local_password = password;
     }
 
