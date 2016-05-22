@@ -8,6 +8,7 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import sd.tp1.clt.SharedGalleryServerDiscovery;
 import sd.tp1.svr.Metadata;
+import sd.tp1.svr.MetadataController;
 import sd.tp1.svr.SharedGalleryFileSystemUtilities;
 import sd.tp1.svr.SharedGalleryClientDiscovery;
 
@@ -41,8 +42,7 @@ public class SharedGalleryServerREST {
     private static long id;
 
     private static KafkaProducer<String, String> producer;
-    private static ConcurrentHashMap<String, Metadata> metadata;
-
+    private static MetadataController metadata_controller;
     private static SharedGalleryServerDiscovery discovery;
 
     /**
@@ -70,22 +70,12 @@ public class SharedGalleryServerREST {
     public Response createAlbum(@PathParam("password") String password, String album) {
         if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
-                sendToConsumers("Albuns", "Updated at " + System.nanoTime());
+                String path = "/" + album;
+                metadata_controller.add(path);
+                metadata_controller.addOp(path, id, "create");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+                sendToConsumers("Albuns", album + "-create");
                 return Response.status(Response.Status.CREATED).entity(album).build();
-            }
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-    }
-
-    @GET
-    @Path("/{album}&password={password}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
-        if(validate(password)) {
-            List<String> lst = SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
-            if(lst != null) {
-                return Response.ok(lst).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -100,8 +90,25 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created) {
-                sendToConsumers("Albuns", "Updated at " + System.nanoTime());
+                String path = "/" + album;
+                metadata_controller.addOp(path, id, "delete");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+                sendToConsumers("Albuns", album + "-delete");
                 return Response.ok(true).build();
+            }
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
+    @GET
+    @Path("/{album}&password={password}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
+        if(validate(password)) {
+            List<String> lst = SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
+            if(lst != null) {
+                return Response.ok(lst).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -129,7 +136,12 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
             if(new_name != null && picture.equalsIgnoreCase(new_name)) {
-                sendToConsumers(album, SharedGalleryFileSystemUtilities.removeExtension(picture) + "-" + "create");
+                String no_ext = SharedGalleryFileSystemUtilities.removeExtension(picture);
+                String path = "/" + album + "/" + no_ext;
+                metadata_controller.add(path);
+                metadata_controller.addOp(path, id, "create");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+                sendToConsumers(album, no_ext + "-" + "create");
                 return Response.status(Response.Status.CREATED).entity(SharedGalleryFileSystemUtilities.removeExtension(new_name)).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -144,7 +156,10 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created) {
-                sendToConsumers(album, SharedGalleryFileSystemUtilities.removeExtension(picture) + "-" + "delete");
+                String path = "/" + album + "/" + picture;
+                metadata_controller.addOp(path, id, "delete");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+                sendToConsumers(album, picture + "-" + "delete");
                 return Response.ok(true).build();
             }
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -163,8 +178,7 @@ public class SharedGalleryServerREST {
 
     public static void main(String[] args) throws Exception {
 
-        metadata = new ConcurrentHashMap<>();
-        cnt = 0;
+        metadata_controller = new MetadataController();
         id = System.nanoTime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

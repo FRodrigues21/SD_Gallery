@@ -113,8 +113,11 @@ public class SharedGalleryFileSystemUtilities {
     public static Boolean deletePicture(File basePath, String album, String picture) {
         for(String ext : EXTENSIONS) {
             File filePath = new File(basePath + "/" + album + "/" + picture + "." + ext);
-            if(filePath.exists() && filePath.isFile())
-                return filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+            if(filePath.exists() && filePath.isFile()) {
+                filePath.delete();
+                //return filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+                return true;
+            }
         }
         return false;
     }

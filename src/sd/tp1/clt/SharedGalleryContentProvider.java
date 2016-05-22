@@ -75,7 +75,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	@Override
 	public List<Album> getListOfAlbums() {
 		if(current_data.isEmpty())
-			return updateAlbums().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+			return updateAlbums("", "").stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 		return current_data.keySet().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
@@ -115,7 +115,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		System.out.println("UPDATE INTERFACE OF ALBUM");
 		if(current_data.get(album.getName()).isEmpty())
 			return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
@@ -219,7 +218,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		boolean executed = false;
 		int server = (int)(Math.random() * discovery.getServers().size());
 		Request request = new ArrayList<>(discovery.getServers().values()).get(server);
-		System.out.println(request.getAddress());
 		for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 			try {
 				String received = request.createAlbum(name);
@@ -309,6 +307,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
+		System.out.println("Trying to delete picture.");
 		boolean executed;
 		if(discovery.getServers().isEmpty())
 			return false;
@@ -317,6 +316,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					if(e.deletePicture(album, picture)) {
+						String key = album.getName() + "_" + picture.getName();
+						if(cache.containsKey(key))
+							cache.remove(key);
 						current_data.get(album.getName()).remove(picture.getName());
 						return true;
 					}
@@ -339,7 +341,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private void setupConsumer() {
 		props = new Properties();
 		props.put("bootstrap.servers", "localhost:9092");
-		props.put("group.id", "consumer-tutorial" + System.nanoTime());
+		props.put("group.id", "client id:" + System.nanoTime());
 		props.put("key.deserializer", StringDeserializer.class.getName());
 		props.put("value.deserializer", StringDeserializer.class.getName());
 		consumer = new KafkaConsumer<>(props);
@@ -361,7 +363,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						System.out.println("[ CLIENT ] Recieved topic: " + topic + " and event: " + event);
 						String [] message = event.split("-");
 						if(topic.equalsIgnoreCase("Albuns") && !current_data.containsKey(topic))
-							updateAlbums();
+							updateAlbums(message[0], message[1]);
 						else if(current_data.containsKey(topic))
 							updateAlbum(topic, message[0], message[1]);
 					});
@@ -372,39 +374,59 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		}).start();
 	}
 
-	public List<String> updateAlbums() {
-		System.out.println("[ CLIENT ] Updated Albuns!");
-		List<String> lst_current = new ArrayList<>(current_data.keySet());
-		List<String> lst_possible = getListOfAlbumsFromServers();
-		if(!listsAreEqual(lst_current, lst_possible)) {
-			current_data.clear();
-			for(String album : lst_possible)
-				current_data.put(album, new ArrayList<>());
-			current_topicList.addAll(current_data.keySet());
+	public List<String> updateAlbums(String name, String event) {
+		System.out.println("[ CLIENT ] Updating list of albuns!");
+		List<String> lst_current;
+		if(!event.equalsIgnoreCase("")) {
+			if(event.equalsIgnoreCase("create")) {
+				if(!current_data.containsKey(name))
+					current_data.put(name, new ArrayList<>());
+				System.out.println("[ UPDATE ] Created album " + name);
+			}
+			else {
+				if(current_data.containsKey(name))
+					current_data.remove(name);
+				System.out.println("[ UPDATE ] Deleted album " + name);
+			}
+			lst_current = new ArrayList<>(current_data.keySet());
 			gui.updateAlbums();
+		}
+		else {
+			lst_current = new ArrayList<>(current_data.keySet());
+			List<String> lst_possible = getListOfAlbumsFromServers();
+			if(!listsAreEqual(lst_current, lst_possible)) {
+				current_data.clear();
+				for(String album : lst_possible)
+					if(!current_data.containsKey(album))
+						current_data.put(album, new ArrayList<>());
+				current_topicList.addAll(current_data.keySet());
+				gui.updateAlbums();
+			}
 		}
 		return lst_current;
 	}
 
 	private List<String> updateAlbum(String album, String picture, String event) {
-		System.out.println("[ CLIENT ] Updated album " + album);
+		System.out.println("[ CLIENT ] Updating list of pictures from " + album);
+		List<String> lst_current;
 		if(event.equalsIgnoreCase("delete")) {
-			System.out.println("[ CLIENT ] Deleted picture " + picture);
 			current_data.get(album).remove(picture);
 			String key = album + "_" + picture;
 			if(cache.containsKey(key))
 				cache.remove(key);
+			System.out.println("[ UPDATE ] Deleted picture " + picture);
+			lst_current = current_data.get(album);
 			gui.updateAlbum(new SharedAlbum(album));
 		}
 		else {
-			List<String> lst_current = current_data.get(album);
+			lst_current = current_data.get(album);
 			List<String> lst_possible = getListOfPicturesFromServer(album);
 			if(!listsAreEqual(lst_current, lst_possible)) {
 				current_data.put(album, lst_possible);
 				gui.updateAlbum(new SharedAlbum(album));
 			}
 		}
-		return current_data.get(album);
+		return lst_current;
 	}
 
 	/**

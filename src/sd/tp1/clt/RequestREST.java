@@ -105,8 +105,6 @@ public class RequestREST implements Request {
     @Override
     public byte[] getPictureData(GalleryContentProvider.Album album, GalleryContentProvider.Picture picture) {
         Response response = target.path(album.getName() + "/" + picture.getName() + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
-        System.out.println("Path: " + album.getName() + "/" + picture.getName() + "&password=" + local_password);
-        System.out.println("Status: " + response.getStatus() + " " + INTERNAL_ERROR);
         int status = response.getStatus();
         if(status == OK)
             return response.readEntity(byte[].class);

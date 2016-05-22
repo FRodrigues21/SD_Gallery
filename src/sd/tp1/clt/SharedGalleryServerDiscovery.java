@@ -75,7 +75,7 @@ public class SharedGalleryServerDiscovery implements Runnable{
                                     servers.put(url, new RequestREST(url, local_password));
                                 }
                                 if(provider != null)
-                                    provider.updateAlbums();
+                                    provider.updateAlbums("","");
                             }
                         }
                     } catch (IOException e) {

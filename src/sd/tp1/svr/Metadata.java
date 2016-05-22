@@ -11,42 +11,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Metadata {
 
-    private String type;
+    private int cnt;
     private String name;
     private Operation last;
-    private List<Operation> operations;
-    private Map<String, Metadata> images;
 
-    public Metadata(String type, String name) {
-        this.type = type;
+    public Metadata(String name) {
         this.name = name;
-        operations = new LinkedList<>();
-        images = new HashMap<>();
     }
 
-    public Operation getLastUpdate() {
-        return last;
+    public void addOperation(long id, String event) {
+        last = new Operation(cnt++, id, event);
     }
 
-    public void addOperation(long cnt, long id, String event) {
-        last = new Operation(cnt, id, event);
-        operations.add(last);
-        String result = String.format("[ METADATA ] %s: %s at (%d , %d)", name, event, cnt, id);
-        System.out.println(result);
-    }
-
-    public boolean hasImage(String name) {
-        return images.containsKey(name);
-    }
-
-    public void addImage(String name) {
-        if(!hasImage(name))
-            images.put(name, new Metadata("picture", name));
-    }
-
-    public void addImageOperation(String image, long cnt, long id, String event) {
-        last = new Operation(cnt, id, event);
-        images.get(image).addOperation(cnt, id, event);
+    public String toString() {
+        return String.format("%s %d %d %s", name, last.getCnt(), last.getId(), last.getEvent());
     }
 
 }
