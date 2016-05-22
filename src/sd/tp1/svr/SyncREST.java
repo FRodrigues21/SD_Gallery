@@ -77,6 +77,16 @@ public class SyncREST implements Sync {
     }
 
     @Override
+    public int getTries() {
+        return tries;
+    }
+
+    @Override
+    public String getAddress() {
+        return this.url;
+    }
+
+    @Override
     public byte[] getPictureData(String album, String picture) {
         Response response = target.path(album + "/" + picture + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
         int status = response.getStatus();

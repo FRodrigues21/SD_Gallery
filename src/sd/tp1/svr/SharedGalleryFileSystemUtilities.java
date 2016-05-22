@@ -115,7 +115,7 @@ public class SharedGalleryFileSystemUtilities {
             File filePath = new File(basePath + File.separator + album + File.separator + picture + File.separator + ext);
             if(filePath.exists() && filePath.isFile()) {
                 filePath.delete();
-                //return filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
+                //filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
                 return true;
             }
         }

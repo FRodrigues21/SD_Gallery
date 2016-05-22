@@ -12,6 +12,10 @@ public interface Sync {
 
     List<String> sync();
 
+    int getTries();
+
+    String getAddress();
+
     byte[] getPictureData(String album, String picture);
 
 }

@@ -29,9 +29,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private static final int MAX_RETRIES = 3; // Max number of retries before deleting the server from the server list
 
 	private static final int MAX_CACHE_CAPACITY = 8; // Cache maximum number of entries
-	private static final int MAX_CACHE_TIME = 2; // Cache maximum time in minutes
+	private static final int MAX_CACHE_TIME = 60; // Cache maximum time in seconds
 
 	private SharedGalleryContentCache<String, SharedPicture> cache;
+	private Map<String, Long> ignore;
 	private Map<String, List<String>> current_data;
 
 	private String local_password;
@@ -48,6 +49,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		} catch (UnknownHostException e) {
 			System.err.println("CLIENT ERROR: CLIENT HAS NO ADDRESS! SO IT'S UNREACHABLE");
 		}
+		ignore = new HashMap<>();
 		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
 		current_data = new HashMap<>();
 		setupConsumer();
@@ -106,6 +108,12 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			}
 		}
 		current_topicList.addAll(lst);
+		for(String tmp : ignore.keySet()) {
+			if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10)
+				lst.remove(tmp);
+			else
+				ignore.remove(tmp);
+		}
 		return lst;
 	}
 
@@ -255,6 +263,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				try {
 					if(e.deleteAlbum(album) && current_data.containsKey(album.getName())) {
 						current_data.remove(album.getName());
+						ignore.put(album.getName(), System.currentTimeMillis());
 						executed = true;
 						break;
 					}
@@ -325,6 +334,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						if(cache.containsKey(key))
 							cache.remove(key);
 						current_data.get(album.getName()).remove(picture.getName());
+						ignore.put(key, System.currentTimeMillis());
 						return true;
 					}
 					executed = true;
@@ -456,7 +466,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
      */
 	private double timeBetween(long time1, long time2) {
 		long result = time2 - time1;
-		return TimeUnit.MILLISECONDS.toMinutes(result);
+		return TimeUnit.MILLISECONDS.toSeconds(result);
 	}
 
 	/**

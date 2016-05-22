@@ -19,8 +19,10 @@ public class SyncSOAP implements Sync {
     private SharedGalleryServerSOAP server; // Stub from the SOAP server
     private String url; // Url of the SOAP server
     private String local_password;
+    private int tries;
 
     public SyncSOAP(String url, String password) {
+        this.tries = 0;
         this.url = url;
         this.local_password = password;
         try {
@@ -33,6 +35,16 @@ public class SyncSOAP implements Sync {
     @Override
     public List<String> sync() {
         return server.sendMetadata(local_password);
+    }
+
+    @Override
+    public String getAddress() {
+        return this.url;
+    }
+
+    @Override
+    public int getTries() {
+        return tries;
     }
 
     @Override

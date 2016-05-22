@@ -197,7 +197,7 @@ public class SharedGalleryServerREST {
         return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
-    private void sendToConsumers(String topic, String event) {
+    private static void sendToConsumers(String topic, String event) {
         producer.send(new ProducerRecord<>(topic, event));
         System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
     }
@@ -206,11 +206,26 @@ public class SharedGalleryServerREST {
     private static void fetchReplicaMetadata() {
         new Thread(() -> {
             for(;;) {
+                boolean executed = false;
                 List<String> content = new ArrayList<>();
                 Sync request = discovery.getServer();
                 if(request != null) {
-                    content = request.sync();
-                    compareMetadata(request, content);
+                    for(int i = 0; i < 3 && !executed; i++) {
+                        try {
+                            content = request.sync();
+                            executed = true;
+                            compareMetadata(request, content);
+                        }
+                        catch (RuntimeException ex) {
+                            if (request.getTries() == 3 + 1)
+                                discovery.removeServer(request.getAddress());
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
                 }
                 try {
                     Thread.sleep(10000);
@@ -246,8 +261,10 @@ public class SharedGalleryServerREST {
                         String picture = pictureFromMetadata(path);
                         String ext = data[4];
                         metadata_controller.addFrom(path, tmp);
-                        if(tmp.getEvent().equalsIgnoreCase("delete"))
+                        if(tmp.getEvent().equalsIgnoreCase("delete")) {
                             SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+                            sendToConsumers(album, picture + "-delete");
+                        }
                         else {
                             SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
                         }
@@ -259,6 +276,7 @@ public class SharedGalleryServerREST {
                             if(tmp.getEvent().equalsIgnoreCase("delete")) {
                                 metadata_controller.addFrom(path, tmp);
                                 SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+                                sendToConsumers("Albuns", album + "-delete");
                             }
                         }
                         else {
@@ -266,6 +284,7 @@ public class SharedGalleryServerREST {
                             if(tmp.getEvent().equalsIgnoreCase("delete")) {
                                 metadata_controller.addFrom(path, tmp);
                                 SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+                                sendToConsumers(album, picture + "-delete");
                             }
                         }
                     }
