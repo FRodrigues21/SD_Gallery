@@ -1,16 +1,20 @@
 package sd.tp1.svr.SOAP;
 
-import sd.tp1.svr.SharedGalleryFileSystemUtilities;
-import sd.tp1.svr.SharedGalleryClientDiscovery;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
+import sd.tp1.svr.*;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
+import javax.ws.rs.core.Response;
 import javax.xml.ws.Endpoint;
 
 /**
@@ -22,6 +26,12 @@ public class SharedGalleryServerSOAP {
 
     private static File basePath = new File("./FileServerSOAP");
     private static String local_password;
+
+    private static long id;
+
+    private static KafkaProducer<String, String> producer;
+    private static OthersServerDiscovery discovery;
+    private static MetadataController metadata_controller;
 
     /**
      * The methods from this class act the same way as the ones from REQUEST interface
@@ -48,37 +58,206 @@ public class SharedGalleryServerSOAP {
 
     @WebMethod
     public String createAlbum(String album, String password) {
-        if(validate(password))
-            return SharedGalleryFileSystemUtilities.createDirectory(basePath, album);
+        if(validate(password)) {
+            if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
+                // Metadata
+                String path = "/" + album;
+                metadata_controller.add(path, id, "create", "null");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                //Kafka
+                sendToConsumers("Albuns", album + "-create");
+            }
+        }
         return null;
     }
 
     @WebMethod
     public Boolean deleteAlbum(String album, String password){
-        if(validate(password))
-            return SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+        if(validate(password)) {
+            boolean deleted = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+            if(deleted) {
+                // Metadata
+                String path = "/" + album;
+                metadata_controller.addOp(path, id, "delete");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                //Kafka
+                sendToConsumers("Albuns", album + "-delete");
+                return true;
+            }
+        }
         return false;
     }
 
     @WebMethod
     public String uploadPicture(String album, String picture, byte [] data, String password) {
-        if(validate(password))
-            return SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
+        if(validate(password)) {
+            String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
+            if(new_name != null && picture.equalsIgnoreCase(new_name)) {
+                String no_ext = SharedGalleryFileSystemUtilities.removeExtension(picture);
+
+                // Metadata
+                String path = "/" + album + "/" + no_ext;
+                metadata_controller.add(path, id, "create", picture);
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                // Kafka
+                sendToConsumers(album, no_ext + "-" + "create");
+                return SharedGalleryFileSystemUtilities.removeExtension(new_name);
+            }
+        }
         return null;
     }
 
     @WebMethod
     public Boolean deletePicture(String album, String picture, String password) {
-        if(validate(password))
-            return SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+        if(validate(password)) {
+            boolean deleted = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+            if(deleted) {
+                // Metadata
+                String path = "/" + album + "/" + picture;
+                metadata_controller.addOp(path, id, "delete");
+                System.out.println("METADATA: " + metadata_controller.metadata(path));
+
+                // Kafka
+                sendToConsumers(album, picture + "-" + "delete");
+                return true;
+            }
+        }
         return false;
+    }
+
+    @WebMethod
+    public List<String> sendMetadata(String password) {
+        if(validate(password)) {
+            List<String> current_metadata = new ArrayList<>();
+            for(Metadata metadata : ((ConcurrentHashMap<String, Metadata>)metadata_controller.getMetadata()).values()) {
+                String content = metadata.converted();
+                current_metadata.add(content);
+                System.out.println("[ SENDING ] " + content);
+            }
+            return current_metadata;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("ALL")
+    private static void fetchReplicaMetadata() {
+        new Thread(() -> {
+            for(;;) {
+                List<String> content = new ArrayList<>();
+                Sync request = discovery.getServer();
+                if(request != null) {
+                    content = request.sync();
+                    compareMetadata(request, content);
+                }
+                try {
+                    Thread.sleep(10000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    @SuppressWarnings("ALL")
+    private static void compareMetadata(Sync request, List<String> replica_content) {
+        for(String metadata : replica_content) {
+            System.out.println("[ RECIEVING ] " + metadata);
+            String [] data = metadata.split(" ");
+            String path = data[0];
+            Metadata tmp = new Metadata(path, Integer.parseInt(data[1]), Long.parseLong(data[2]), data[3], data[4]);
+            String album = albumFromMetadata(path);
+            String event = tmp.getEvent();
+            if(metadata_controller.getMetadata().containsKey(path)) { // Tem metadata
+                Metadata local = (Metadata)metadata_controller.getMetadata().get(path);
+                if(local.getCnt() < tmp.getCnt()) {
+                    if(isAlbumMetadata(path)) {
+                        metadata_controller.addFrom(path, tmp);
+                        if(tmp.getEvent().equalsIgnoreCase("delete")) {
+                            SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+                        }
+                        else
+                            SharedGalleryFileSystemUtilities.createDirectory(basePath, album);
+                    }
+                    else {
+                        String picture = pictureFromMetadata(path);
+                        String ext = data[4];
+                        metadata_controller.addFrom(path, tmp);
+                        if(tmp.getEvent().equalsIgnoreCase("delete"))
+                            SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+                        else {
+                            SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
+                        }
+                    }
+                }
+                else if(local.getCnt() == tmp.getCnt()) {
+                    if(!local.getEvent().equalsIgnoreCase(tmp.getEvent())) {
+                        if(isAlbumMetadata(path)) {
+                            if(tmp.getEvent().equalsIgnoreCase("delete")) {
+                                metadata_controller.addFrom(path, tmp);
+                                SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
+                            }
+                        }
+                        else {
+                            String picture = albumFromMetadata(path);
+                            if(tmp.getEvent().equalsIgnoreCase("delete")) {
+                                metadata_controller.addFrom(path, tmp);
+                                SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+                            }
+                        }
+                    }
+                }
+            }
+            else { // Não tem metadata
+                if(isAlbumMetadata(path)) {
+                    metadata_controller.addFrom(path, tmp);
+                    if(event.equalsIgnoreCase("create"))
+                        SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
+                }
+                else {
+                    String picture = pictureFromMetadata(path);
+                    String ext = data[4];
+                    metadata_controller.addFrom(path, tmp);
+                    if(event.equalsIgnoreCase("create")) {
+                        SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isAlbumMetadata(String name) {
+        int count = name.length() - name.replaceAll("/", "").length();
+        if(count == 2)
+            return false;
+        return true;
+    }
+
+    private static String pictureFromMetadata(String meta) {
+        String [] result = meta.split("/");
+        return result[2];
+    }
+
+    private static String albumFromMetadata(String meta) {
+        String [] result = meta.split("/");
+        return result[1];
     }
 
     private static boolean validate(String password) {
         return password.equalsIgnoreCase(local_password);
     }
 
+    private void sendToConsumers(String topic, String event) {
+        producer.send(new ProducerRecord<>(topic, event));
+        System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
+    }
+
     public static void main(String args[]) throws Exception {
+
+        id = System.nanoTime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -90,10 +269,32 @@ public class SharedGalleryServerSOAP {
         String address_s = "http://" + InetAddress.getLocalHost().getHostAddress() + ":8080/FileServerSOAP";
         Endpoint.publish(address_s, new SharedGalleryServerSOAP());
 
+        // Event dessimination - Producer
+
+        Properties env = System.getProperties();
+        Properties props = new Properties();
+
+        props.put("zk.connect", env.getOrDefault("zk.connect", "localhost:2181/"));
+        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", "localhost:9092"));
+        props.put("log.retention.ms", 5000);
+
+        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        props.put("key.serializer", StringSerializer.class.getName());
+        props.put("value.serializer", StringSerializer.class.getName());
+
+        producer = new KafkaProducer<>(props);
+
         System.err.println("SharedGalleryServerSOAP: Started @ " + address_s);
 
-        // Receives
+        discovery = new OthersServerDiscovery(address_s, local_password);
+        new Thread(discovery).start();
+
         new Thread(new SharedGalleryClientDiscovery(address_s)).start();
+
+        metadata_controller = new MetadataController(basePath);
+        metadata_controller.load();
+
+        fetchReplicaMetadata();
 
     }
 

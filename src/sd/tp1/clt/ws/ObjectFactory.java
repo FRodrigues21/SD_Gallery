@@ -26,9 +26,11 @@ public class ObjectFactory {
 
     private final static QName _DeletePicture_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deletePicture");
     private final static QName _CreateAlbumResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "createAlbumResponse");
+    private final static QName _SendMetadata_QNAME = new QName("http://SOAP.svr.tp1.sd/", "sendMetadata");
     private final static QName _DeleteAlbumResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deleteAlbumResponse");
     private final static QName _GetPictureData_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getPictureData");
     private final static QName _GetPictureDataResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getPictureDataResponse");
+    private final static QName _SendMetadataResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "sendMetadataResponse");
     private final static QName _GetListOfAlbumsResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "getListOfAlbumsResponse");
     private final static QName _UploadPicture_QNAME = new QName("http://SOAP.svr.tp1.sd/", "uploadPicture");
     private final static QName _DeletePictureResponse_QNAME = new QName("http://SOAP.svr.tp1.sd/", "deletePictureResponse");
@@ -73,6 +75,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link SendMetadataResponse }
+     * 
+     */
+    public SendMetadataResponse createSendMetadataResponse() {
+        return new SendMetadataResponse();
+    }
+
+    /**
      * Create an instance of {@link GetListOfAlbumsResponse }
      * 
      */
@@ -102,6 +112,14 @@ public class ObjectFactory {
      */
     public CreateAlbumResponse createCreateAlbumResponse() {
         return new CreateAlbumResponse();
+    }
+
+    /**
+     * Create an instance of {@link SendMetadata }
+     * 
+     */
+    public SendMetadata createSendMetadata() {
+        return new SendMetadata();
     }
 
     /**
@@ -179,6 +197,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link SendMetadata }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "sendMetadata")
+    public JAXBElement<SendMetadata> createSendMetadata(SendMetadata value) {
+        return new JAXBElement<SendMetadata>(_SendMetadata_QNAME, SendMetadata.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DeleteAlbumResponse }{@code >}}
      * 
      */
@@ -203,6 +230,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "getPictureDataResponse")
     public JAXBElement<GetPictureDataResponse> createGetPictureDataResponse(GetPictureDataResponse value) {
         return new JAXBElement<GetPictureDataResponse>(_GetPictureDataResponse_QNAME, GetPictureDataResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link SendMetadataResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://SOAP.svr.tp1.sd/", name = "sendMetadataResponse")
+    public JAXBElement<SendMetadataResponse> createSendMetadataResponse(SendMetadataResponse value) {
+        return new JAXBElement<SendMetadataResponse>(_SendMetadataResponse_QNAME, SendMetadataResponse.class, null, value);
     }
 
     /**

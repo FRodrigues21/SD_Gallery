@@ -77,26 +77,6 @@ public class SyncREST implements Sync {
     }
 
     @Override
-    public int getTries() {
-        return 0;
-    }
-
-    @Override
-    public String getAddress() {
-        return null;
-    }
-
-    @Override
-    public List<String> getListOfAlbums() {
-        return null;
-    }
-
-    @Override
-    public List<String> getListOfPictures(String album) {
-        return null;
-    }
-
-    @Override
     public byte[] getPictureData(String album, String picture) {
         Response response = target.path(album + "/" + picture + "&password=" + local_password).request().accept(MediaType.APPLICATION_OCTET_STREAM).get();
         int status = response.getStatus();
@@ -104,26 +84,6 @@ public class SyncREST implements Sync {
             return response.readEntity(byte[].class);
         else if(status == UNAUTHORIZED)
             System.out.println("CLIENT ERROR: Wrong password!");
-        return null;
-    }
-
-    @Override
-    public String createAlbum(String name) {
-        return null;
-    }
-
-    @Override
-    public Boolean deleteAlbum(String album) {
-        return null;
-    }
-
-    @Override
-    public String uploadPicture(String album, String name, byte[] data) {
-        return null;
-    }
-
-    @Override
-    public Boolean deletePicture(String album, String picture) {
         return null;
     }
 

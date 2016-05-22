@@ -27,6 +27,18 @@ public interface SharedGalleryServerSOAP {
 
     /**
      * 
+     * @return
+     *     returns java.util.List<java.lang.String>
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getListOfAlbums", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbums")
+    @ResponseWrapper(localName = "getListOfAlbumsResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbumsResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsResponse")
+    public List<String> getListOfAlbums();
+
+    /**
+     * 
      * @param arg1
      * @param arg0
      * @return
@@ -63,6 +75,24 @@ public interface SharedGalleryServerSOAP {
         String arg1,
         @WebParam(name = "arg2", targetNamespace = "")
         String arg2);
+
+    /**
+     * 
+     * @param arg1
+     * @param arg0
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "createAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbum")
+    @ResponseWrapper(localName = "createAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbumResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumResponse")
+    public String createAlbum(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1);
 
     /**
      * 
@@ -108,24 +138,6 @@ public interface SharedGalleryServerSOAP {
 
     /**
      * 
-     * @param arg1
-     * @param arg0
-     * @return
-     *     returns java.lang.String
-     */
-    @WebMethod
-    @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "createAlbum", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbum")
-    @ResponseWrapper(localName = "createAlbumResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.CreateAlbumResponse")
-    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/createAlbumResponse")
-    public String createAlbum(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        String arg1);
-
-    /**
-     * 
      * @param arg2
      * @param arg1
      * @param arg0
@@ -147,14 +159,17 @@ public interface SharedGalleryServerSOAP {
 
     /**
      * 
+     * @param arg0
      * @return
      *     returns java.util.List<java.lang.String>
      */
     @WebMethod
     @WebResult(targetNamespace = "")
-    @RequestWrapper(localName = "getListOfAlbums", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbums")
-    @ResponseWrapper(localName = "getListOfAlbumsResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.GetListOfAlbumsResponse")
-    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/getListOfAlbumsResponse")
-    public List<String> getListOfAlbums();
+    @RequestWrapper(localName = "sendMetadata", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.SendMetadata")
+    @ResponseWrapper(localName = "sendMetadataResponse", targetNamespace = "http://SOAP.svr.tp1.sd/", className = "sd.tp1.clt.ws.SendMetadataResponse")
+    @Action(input = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/sendMetadataRequest", output = "http://SOAP.svr.tp1.sd/SharedGalleryServerSOAP/sendMetadataResponse")
+    public List<String> sendMetadata(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0);
 
 }

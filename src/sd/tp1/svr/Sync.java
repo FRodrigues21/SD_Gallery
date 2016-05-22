@@ -12,22 +12,6 @@ public interface Sync {
 
     List<String> sync();
 
-    int getTries();
-
-    String getAddress();
-
-    List<String> getListOfAlbums();
-
-    List<String> getListOfPictures(String album);
-
     byte[] getPictureData(String album, String picture);
-
-    String createAlbum(String name);
-
-    Boolean deleteAlbum(String album);
-
-    String uploadPicture(String album, String name, byte [] data);
-
-    Boolean deletePicture(String album, String picture);
 
 }

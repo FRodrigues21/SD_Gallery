@@ -37,7 +37,6 @@ public class SharedGalleryServerREST {
     private static String local_password;
     private static final File KEYSTORE = new File("./server.jks");
 
-    private static long cnt;
     private static long id;
 
     private static KafkaProducer<String, String> producer;
@@ -166,7 +165,7 @@ public class SharedGalleryServerREST {
     @Produces(MediaType.APPLICATION_JSON)
     public Response deletePicture(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
         if(validate(password)) {
-            Boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
+            boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created) {
 
                 // Metadata
@@ -205,6 +204,7 @@ public class SharedGalleryServerREST {
         System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
     }
 
+    @SuppressWarnings("ALL")
     private static void fetchReplicaMetadata() {
         new Thread(() -> {
             for(;;) {
@@ -224,6 +224,7 @@ public class SharedGalleryServerREST {
         }).start();
     }
 
+    @SuppressWarnings("ALL")
     private static void compareMetadata(Sync request, List<String> replica_content) {
         for(String metadata : replica_content) {
             System.out.println("[ RECIEVING ] " + metadata);
