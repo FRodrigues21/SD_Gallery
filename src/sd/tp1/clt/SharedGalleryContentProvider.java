@@ -246,13 +246,18 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public void deleteAlbum(Album album) {
-		boolean executed;
+		boolean executed = false;
 		for(Request e : discovery.getServers().values()) {
+			if(executed)
+				break;
 			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
-					if(e.deleteAlbum(album) && current_data.containsKey(album.getName()))
+					if(e.deleteAlbum(album) && current_data.containsKey(album.getName())) {
 						current_data.remove(album.getName());
+						executed = true;
+						break;
+					}
 					executed = true;
 				} catch (RuntimeException e1) {
 					if (e.getTries() == MAX_RETRIES + 1)
