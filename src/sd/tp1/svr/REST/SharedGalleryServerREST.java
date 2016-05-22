@@ -1,13 +1,11 @@
 package sd.tp1.svr.REST;
 
 import com.sun.net.httpserver.HttpServer;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import sd.tp1.clt.SharedGalleryServerDiscovery;
 import sd.tp1.svr.*;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -284,6 +282,7 @@ public class SharedGalleryServerREST {
                     String ext = data[4];
                     metadata_controller.addFrom(path, tmp);
                     if(event.equalsIgnoreCase("create")) {
+                        System.out.println("[ CREATING NON PICTURE ] " + ext);
                         SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
                     }
                 }

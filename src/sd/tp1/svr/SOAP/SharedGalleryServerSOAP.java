@@ -67,6 +67,7 @@ public class SharedGalleryServerSOAP {
 
                 //Kafka
                 sendToConsumers("Albuns", album + "-create");
+                return album;
             }
         }
         return null;

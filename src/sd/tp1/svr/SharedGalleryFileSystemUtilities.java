@@ -94,7 +94,7 @@ public class SharedGalleryFileSystemUtilities {
         File filePath = new File(basePath + File.separator + album + File.separator + picture);
         if(!filePath.exists()) {
             try {
-                Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW);
+                System.out.println(Files.write(filePath.toPath(), data, StandardOpenOption.CREATE_NEW));
                 return new FilePicture(filePath).getName();
             } catch (IOException e) {
                 return null;
