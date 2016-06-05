@@ -344,10 +344,13 @@ public class SharedGalleryServerREST {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.println("PATH");
+        System.out.println("PATH: ");
         basePath = new File("./FileServerREST" + reader.readLine());
 
-        System.out.println("SERVER PORT");
+        System.out.println("KAFKA IP: ");
+        String kafka_ip = reader.readLine();
+
+        System.out.println("SERVER PORT: ");
         int port = Integer.parseInt(reader.readLine());
 
         System.out.println("JKS PASSWORD: ");
@@ -386,9 +389,9 @@ public class SharedGalleryServerREST {
         Properties env = System.getProperties();
         Properties props = new Properties();
 
-        props.put("zk.connect", env.getOrDefault("zk.connect", "localhost:2181/"));
-        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", "localhost:9092"));
-        props.put("log.retention.ms", 5000);
+        props.put("zk.connect", env.getOrDefault("zk.connect", kafka_ip+":2181/"));
+        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", kafka_ip+":9092"));
+        props.put("log.retention.ms", 1000);
 
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("key.serializer", StringSerializer.class.getName());

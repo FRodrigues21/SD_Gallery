@@ -280,6 +280,9 @@ public class SharedGalleryServerSOAP {
         System.out.println("PATH: ");
         basePath = new File("./FileServerSOAP" + reader.readLine());
 
+        System.out.println("KAFKA IP: ");
+        String kafka_ip = reader.readLine();
+
         System.out.println("PORT: ");
         port = Integer.parseInt(reader.readLine());
 
@@ -296,9 +299,9 @@ public class SharedGalleryServerSOAP {
         Properties env = System.getProperties();
         Properties props = new Properties();
 
-        props.put("zk.connect", env.getOrDefault("zk.connect", "localhost:2181/"));
-        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", "localhost:9092"));
-        props.put("log.retention.ms", 5000);
+        props.put("zk.connect", env.getOrDefault("zk.connect", kafka_ip+":2181/"));
+        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", kafka_ip+":9092"));
+        props.put("log.retention.ms", 1000);
 
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("key.serializer", StringSerializer.class.getName());

@@ -1,6 +1,8 @@
 package sd.tp1.clt;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -36,14 +38,23 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private Map<String, List<String>> current_data;
 
 	private String local_password;
+	private String kafka_ip;
 
 	private Properties props;
 	private KafkaConsumer<String, String> consumer;
 	private List<String> current_topicList;
 
-	SharedGalleryContentProvider(String password) {
+	SharedGalleryContentProvider() throws Exception {
 
-		local_password = password;
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+		System.out.println("KAFKA IP: ");
+		kafka_ip = reader.readLine();
+
+		System.out.println("LOCAL PASSWORD: ");
+		local_password = reader.readLine();
+
+
 		try {
 			System.out.println("ShareGalleryContentProvider: Started @ " + InetAddress.getLocalHost().getHostAddress());
 		} catch (UnknownHostException e) {
@@ -355,7 +366,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private void setupConsumer() {
 		props = new Properties();
-		props.put("bootstrap.servers", "localhost:9092");
+		props.put("bootstrap.servers", kafka_ip+":9092");
 		props.put("group.id", "client id:" + System.nanoTime());
 		props.put("key.deserializer", StringDeserializer.class.getName());
 		props.put("value.deserializer", StringDeserializer.class.getName());

@@ -401,6 +401,12 @@ public class SharedGalleryServerPROXY {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
+        System.out.println("KAFKA IP: ");
+        String kafka_ip = reader.readLine();
+
+        System.out.println("SERVER PORT: ");
+        int port = Integer.parseInt(reader.readLine());
+
         System.out.println("JKS PASSWORD: ");
         char [] jks_password = reader.readLine().toCharArray();
 
@@ -417,7 +423,7 @@ public class SharedGalleryServerPROXY {
         String code = reader.readLine();
         accessToken = service.getAccessToken(code);
 
-        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(9070).build();
+        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(port).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerPROXY.class);
 
@@ -442,9 +448,9 @@ public class SharedGalleryServerPROXY {
         Properties env = System.getProperties();
         Properties props = new Properties();
 
-        props.put("zk.connect", env.getOrDefault("zk.connect", "localhost:2181/"));
-        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", "localhost:9092"));
-        props.put("log.retention.ms", 5000);
+        props.put("zk.connect", env.getOrDefault("zk.connect", kafka_ip+":2181/"));
+        props.put("bootstrap.servers", env.getOrDefault("bootstrap.servers", kafka_ip+":9092"));
+        props.put("log.retention.ms", 1000);
 
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("key.serializer", StringSerializer.class.getName());
