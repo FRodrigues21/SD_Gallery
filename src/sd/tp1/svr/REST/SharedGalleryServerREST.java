@@ -258,6 +258,10 @@ public class SharedGalleryServerREST {
                             SharedGalleryFileSystemUtilities.createDirectory(basePath, album);
                     }
                     else {
+                        if(!metadata_controller.getMetadata().containsKey("/" + album)) {
+                            metadata_controller.add("/" + album, id, "create", "null");
+                            SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
+                        }
                         String picture = pictureFromMetadata(path);
                         String ext = data[4];
                         metadata_controller.addFrom(path, tmp);
@@ -297,6 +301,10 @@ public class SharedGalleryServerREST {
                         SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
                 }
                 else {
+                    if(!metadata_controller.getMetadata().containsKey("/" + album)) {
+                        metadata_controller.add("/" + album, id, "create", "null");
+                        SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
+                    }
                     String picture = pictureFromMetadata(path);
                     String ext = data[4];
                     metadata_controller.addFrom(path, tmp);
