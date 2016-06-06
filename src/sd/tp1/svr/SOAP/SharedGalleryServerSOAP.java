@@ -39,11 +39,13 @@ public class SharedGalleryServerSOAP {
 
     @WebMethod
     public List<String> getListOfAlbums() {
+        System.out.println("[ SOAP ] Giving albums to client.");
         return SharedGalleryFileSystemUtilities.getDirectoriesFromPath(basePath);
     }
 
     @WebMethod
     public List<String> getListOfPictures(String album, String password) {
+        System.out.println("[ SOAP ] Giving pictures from" + album +  " to client.");
         if(validate(password))
             return SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
         return null;

@@ -3,8 +3,7 @@ package sd.tp1.clt;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -57,7 +56,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 		try {
 			System.out.println("ShareGalleryContentProvider: Started @ " + InetAddress.getLocalHost().getHostAddress());
-		} catch (UnknownHostException e) {
+		} catch (Exception e) {
 			System.err.println("CLIENT ERROR: CLIENT HAS NO ADDRESS! SO IT'S UNREACHABLE");
 		}
 		ignore = new HashMap<>();
@@ -134,9 +133,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		if(current_data.get(album.getName()).isEmpty())
-			return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
-		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
 	private List<String> getListOfPicturesFromServer(String album) {
@@ -435,7 +432,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private List<String> updateAlbum(String album, String picture, String event) {
 		System.out.println("[ CLIENT ] Updating list of pictures from " + album);
 		List<String> lst_current;
-		if(event.equalsIgnoreCase("delete")) {
+		if(picture != null && event != null && event.equalsIgnoreCase("delete")) {
 			current_data.get(album).remove(picture);
 			String key = album + "_" + picture;
 			if(cache.containsKey(key))
@@ -445,12 +442,14 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			gui.updateAlbum(new SharedAlbum(album));
 		}
 		else {
+			System.out.println("Entrou");
 			lst_current = current_data.get(album);
 			List<String> lst_possible = getListOfPicturesFromServer(album);
 			if(!listsAreEqual(lst_current, lst_possible)) {
 				current_data.put(album, lst_possible);
 				gui.updateAlbum(new SharedAlbum(album));
 			}
+			System.out.println("Saiu");
 		}
 		return lst_current;
 	}

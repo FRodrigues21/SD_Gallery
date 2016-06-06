@@ -49,6 +49,7 @@ public class SharedGalleryServerREST {
     @Path("password={password}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfAlbums(@PathParam("password") String password) {
+        System.out.println("[ SOAP ] Giving albums to client.");
         if(validate(password)) {
             List<String> lst = SharedGalleryFileSystemUtilities.getDirectoriesFromPath(basePath);
             if(lst != null) {
@@ -110,6 +111,7 @@ public class SharedGalleryServerREST {
     @Path("/{album}&password={password}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfPictures(@PathParam("album") String album, @PathParam("password") String password) {
+        System.out.println("[ REST ] Giving pictures from" + album +  " to client.");
         if(validate(password)) {
             List<String> lst = SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
             if(lst != null) {
