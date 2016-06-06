@@ -89,9 +89,9 @@ public class SharedGalleryServerPROXY {
                     JSONObject album = (JSONObject)obj;
                     String id = (String)album.get("id");
                     String title = (String)album.get("title");
-                    if(!index_albums.containsKey(title))
+                    if(title != null && !index_albums.containsKey(title))
                         index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
-                    else if(index_albums.containsKey(title) && !index_albums.get(title).getId().equalsIgnoreCase(id)) {
+                    else if(title == null || (index_albums.containsKey(title) && !index_albums.get(title).getId().equalsIgnoreCase(id))) {
                         title = title + "_" + id;
                         if(!index_albums.containsKey(title))
                             index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
@@ -423,7 +423,7 @@ public class SharedGalleryServerPROXY {
         String code = reader.readLine();
         accessToken = service.getAccessToken(code);
 
-        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerREST").port(port).build();
+        URI baseUri = UriBuilder.fromUri("https://" + InetAddress.getLocalHost().getHostAddress() + "/FileServerRESTPROXY").port(port).build();
         ResourceConfig config = new ResourceConfig();
         config.register(SharedGalleryServerPROXY.class);
 

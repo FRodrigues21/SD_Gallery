@@ -74,7 +74,7 @@ public class OthersServerDiscovery implements Runnable {
                                 System.err.println("ADDED SERVER: " + url);
                                 servers.put(url, new SyncSOAP(url, local_password));
                             }
-                            else if(url.contains("REST")) {
+                            else if(url.contains("REST") && !url.contains("PROXY")) {
                                 System.err.println("ADDED SERVER: " + url);
                                 servers.put(url, new SyncREST(url, local_password));
                             }
