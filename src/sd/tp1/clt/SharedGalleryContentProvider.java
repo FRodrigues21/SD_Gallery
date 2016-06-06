@@ -94,35 +94,37 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	private List<String> getListOfAlbumsFromServers() {
 		List<String> lst = new ArrayList<>();
 		boolean executed;
-		for (Request e : discovery.getServers().values()) {
-			executed = false;
-			for(int i = 0; i < MAX_RETRIES && !executed; i++) {
-				List<String> tmp;
-				try {
-					tmp = e.getListOfAlbums();
-					if (tmp != null) {
-						lst.removeAll(tmp);
-						lst.addAll(tmp);
-					}
-					executed = true;
-				}
-				catch (RuntimeException ex) {
-					if (e.getTries() == MAX_RETRIES + 1)
-						discovery.removeServer(e.getAddress());
+		if(!discovery.getServers().isEmpty()) {
+			for (Request e : discovery.getServers().values()) {
+				executed = false;
+				for(int i = 0; i < MAX_RETRIES && !executed; i++) {
+					List<String> tmp;
 					try {
-						Thread.sleep(RETRY_TIME);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
+						tmp = e.getListOfAlbums();
+						if (tmp != null) {
+							lst.removeAll(tmp);
+							lst.addAll(tmp);
+						}
+						executed = true;
+					}
+					catch (RuntimeException ex) {
+						if (e.getTries() == MAX_RETRIES + 1)
+							discovery.removeServer(e.getAddress());
+						try {
+							Thread.sleep(RETRY_TIME);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
 					}
 				}
 			}
-		}
-		current_topicList.addAll(lst);
-		for(String tmp : ignore.keySet()) {
-			if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10)
-				lst.remove(tmp);
-			else
-				ignore.remove(tmp);
+			current_topicList.addAll(lst);
+			for(String tmp : ignore.keySet()) {
+				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10)
+					lst.remove(tmp);
+				else
+					ignore.remove(tmp);
+			}
 		}
 		return lst;
 	}
@@ -373,7 +375,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		current_topicList = new ArrayList<>();
 		current_topicList.add("Albuns");
 		consumer.subscribe(current_topicList);
-		detectChanges();
 	}
 
 	private void detectChanges() {
@@ -501,6 +502,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		if(discovery == null) {
 			discovery = new SharedGalleryServerDiscovery(local_password, this);
 			new Thread(discovery).start();
+			detectChanges();
 		}
 	}
 
