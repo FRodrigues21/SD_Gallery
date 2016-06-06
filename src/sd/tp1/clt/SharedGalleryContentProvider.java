@@ -397,6 +397,18 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				consumer.close();
 			}
 		}).start();
+
+		new Thread(() -> {
+			try {
+				for (;;) {
+					updateAlbums("", "");
+					Thread.sleep(10000);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}).start();
+
 	}
 
 	public List<String> updateAlbums(String name, String event) {
