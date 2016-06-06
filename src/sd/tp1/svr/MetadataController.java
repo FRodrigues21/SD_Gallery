@@ -23,7 +23,8 @@ public class MetadataController implements java.io.Serializable {
     }
 
     public void add(String path, long id, String event, String ext) {
-        metadata.put(path, new Metadata(path, ext));
+        if(!metadata.containsKey(path))
+            metadata.put(path, new Metadata(path, ext));
         metadata.get(path).addOperation(id, event);
         save();
     }

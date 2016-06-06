@@ -244,11 +244,13 @@ public class SharedGalleryServerSOAP {
                         SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
                 }
                 else {
+                    System.out.println("ENTROU AQUI");
                     if(!metadata_controller.getMetadata().containsKey("/" + album)) {
                         metadata_controller.add("/" + album, id, "create", "null");
                         SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
                     }
                     String picture = pictureFromMetadata(path);
+                    System.out.println("VAI CRIAR " + picture);
                     String ext = data[4];
                     metadata_controller.addFrom(path, tmp);
                     if(event.equalsIgnoreCase("create")) {
@@ -262,6 +264,7 @@ public class SharedGalleryServerSOAP {
 
     private static boolean isAlbumMetadata(String name) {
         int count = name.length() - name.replaceAll("/", "").length();
+        System.out.println("CONTAGEM: " + count);
         if(count == 2)
             return false;
         return true;
