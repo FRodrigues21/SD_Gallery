@@ -133,7 +133,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		if(current_data.get(album.getName()).isEmpty())
+			return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
 	private List<String> getListOfPicturesFromServer(String album) {

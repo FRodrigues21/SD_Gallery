@@ -149,11 +149,26 @@ public class SharedGalleryServerSOAP {
     private static void fetchReplicaMetadata() {
         new Thread(() -> {
             for(;;) {
+                boolean executed = false;
                 List<String> content = new ArrayList<>();
                 Sync request = discovery.getServer();
                 if(request != null) {
-                    content = request.sync();
-                    compareMetadata(request, content);
+                    for(int i = 0; i < 3 && !executed; i++) {
+                        try {
+                            content = request.sync();
+                            executed = true;
+                            compareMetadata(request, content);
+                        }
+                        catch (RuntimeException ex) {
+                            if (request.getTries() == 3 + 1)
+                                discovery.removeServer(request.getAddress());
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
                 }
                 try {
                     Thread.sleep(10000);
