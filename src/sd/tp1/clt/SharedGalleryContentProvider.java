@@ -103,7 +103,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						}
 					}
 					catch (RuntimeException ex) {
-							System.out.println("LIST ALBUNS FAILED");
+							System.err.println("[ CLIENT ] Failed to retrieve list of albuns, deleting server.");
 							discovery.removeServer(e.getAddress());
 					}
 			}
@@ -141,8 +141,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						lst.addAll(tmp);
 					}
 				} catch (RuntimeException ex) {
-						System.out.println("LIST PICTURES FAILED");
-						discovery.removeServer(e.getAddress());
+					System.err.println("[ CLIENT ] Failed to retrieve list of pictures, deleting server.");
+					discovery.removeServer(e.getAddress());
 				}
 		}
 		return lst;
@@ -154,6 +154,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public byte[] getPictureData(Album album, Picture picture) {
+
+		System.out.println("[ CLIENT ] Getting data from picture " + picture);
 
 		System.out.println("[ CLIENT ] Cache current size: " + cache.size());
 
@@ -186,7 +188,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						return data;
 					}
 				} catch (RuntimeException ex) {
-					System.out.println("PICTURE DATA FAILED");
+					System.err.println("[ CLIENT ] Failed to retrieve picture data, deleting server.");
 					discovery.removeServer(e.getAddress());
 				}
 			}
@@ -201,6 +203,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	@Override
 	public Album createAlbum(String name) {
+
+		System.out.println("[ CLIENT ] Creating album " + name);
+
 		if(current_data.containsKey(name) || name.isEmpty() || discovery.getServers().isEmpty())
 			return null;
 		int server = (int)(Math.random() * discovery.getServers().size());
@@ -215,7 +220,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					return album;
 				}
 			} catch (RuntimeException ex) {
-				System.out.println("CREATE ALBUM FAILED");
+				System.err.println("[ CLIENT ] Failed to create album, deleting server.");
 				discovery.removeServer(request.getAddress());
 			}
 		return null;
@@ -226,6 +231,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public void deleteAlbum(Album album) {
+
+		System.out.println("[ CLIENT ] Deleting album " + album);
+
 		boolean deleted = false;
 		for(Request e : discovery.getServers().values()) {
 			if(deleted)
@@ -240,7 +248,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					break;
 				}
 			} catch (RuntimeException e1) {
-				System.out.println("DELETE ALBUM FAILED");
+				System.err.println("[ CLIENT ] Failed to delete album, deleting server.");
 				discovery.removeServer(e.getAddress());
 			}
 		}
@@ -252,6 +260,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public Picture uploadPicture(Album album, String name, byte [] data) {
+
+		System.out.println("[ CLIENT ] Uploading picture " + name);
+
 		List<String> current_pictureList = current_data.get(album.getName());
 		if(current_pictureList.contains(name) || discovery.getServers().isEmpty())
 			return null;
@@ -264,7 +275,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					}
 				} catch (RuntimeException ex) {
 					if (e.getTries() == MAX_RETRIES) {
-						System.out.println("UPLOAD PICTURE FAILED");
+						System.err.println("[ CLIENT ] Failed to upload picture, deleting server.");
 						discovery.removeServer(e.getAddress());
 					}
 				}
@@ -278,6 +289,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
+
+		System.out.println("[ CLIENT ] Deleting picture " + album.getName());
+
 		if(discovery.getServers().isEmpty())
 			return false;
 		for(Request e : discovery.getServers().values()) {
@@ -292,7 +306,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					}
 				}
 				catch (RuntimeException ex) {
-						System.out.println("DELETE PICTURE FAILED");
+					System.err.println("[ CLIENT ] Failed to delete picture, deleting server.");
 						discovery.removeServer(e.getAddress());
 				}
 		}

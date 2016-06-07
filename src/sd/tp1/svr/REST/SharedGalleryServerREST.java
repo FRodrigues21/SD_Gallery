@@ -49,7 +49,7 @@ public class SharedGalleryServerREST {
     @Path("password={password}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getListOfAlbums(@PathParam("password") String password) {
-        System.out.println("[ SOAP ] Giving albums to client.");
+        System.out.println("[ REST ] Giving albums to client.");
         if(validate(password)) {
             List<String> lst = SharedGalleryFileSystemUtilities.getDirectoriesFromPath(basePath);
             if(lst != null) {
@@ -67,6 +67,8 @@ public class SharedGalleryServerREST {
     public Response createAlbum(@PathParam("password") String password, String album) {
         if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
+
+                System.out.println(" [ REST ] Creating album " + album);
 
                 // Metadata
                 String path = "/" + album;
@@ -91,6 +93,8 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             boolean created = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(created) {
+
+                System.out.println(" [ REST ] Deleting album " + album);
 
                 // Metadata
                 String path = "/" + album;
@@ -143,6 +147,9 @@ public class SharedGalleryServerREST {
         if(validate(password)) {
             String new_name = SharedGalleryFileSystemUtilities.createPicture(basePath, album, picture, data);
             if(new_name != null && picture.equalsIgnoreCase(new_name)) {
+
+                System.out.println(" [ REST ] Creating picture " + picture);
+
                 String no_ext = SharedGalleryFileSystemUtilities.removeExtension(picture);
 
                 // Metadata
@@ -168,6 +175,8 @@ public class SharedGalleryServerREST {
             boolean created = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(created) {
 
+                System.out.println(" [ REST ] Deleting picture " + picture);
+
                 // Metadata
                 String path = "/" + album + "/" + picture;
                 metadata_controller.addOp(path, id, "delete");
@@ -189,10 +198,10 @@ public class SharedGalleryServerREST {
     public Response sendMetadata(@PathParam("password") String password) {
         if(validate(password)) {
             List<String> current_metadata = new ArrayList<>();
+            System.out.println("[ REST ] SENDING METADATA");
             for(Metadata metadata : ((ConcurrentHashMap<String, Metadata>)metadata_controller.getMetadata()).values()) {
                 String content = metadata.converted();
                 current_metadata.add(content);
-                System.out.println("[ SENDING ] " + content);
             }
             return Response.ok(current_metadata).build();
         }
@@ -236,8 +245,8 @@ public class SharedGalleryServerREST {
 
     @SuppressWarnings("ALL")
     private static void compareMetadata(Sync request, List<String> replica_content) {
+        System.out.println("[ SOAP ] SYNCYN WITH " + request.getAddress());
         for(String metadata : replica_content) {
-            System.out.println("[ RECIEVING ] " + metadata);
             String [] data = metadata.split(" ");
             String path = data[0];
             Metadata tmp = new Metadata(path, Integer.parseInt(data[1]), Long.parseLong(data[2]), data[3], data[4]);
@@ -306,7 +315,6 @@ public class SharedGalleryServerREST {
                     String ext = data[4];
                     metadata_controller.addFrom(path, tmp);
                     if(event.equalsIgnoreCase("create")) {
-                        System.out.println("[ CREATING NON PICTURE ] " + ext);
                         SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
                     }
                 }

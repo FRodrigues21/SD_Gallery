@@ -45,7 +45,7 @@ public class SharedGalleryServerSOAP {
 
     @WebMethod
     public List<String> getListOfPictures(String album, String password) {
-        System.out.println("[ SOAP ] Giving pictures from" + album +  " to client.");
+        System.out.println("[ SOAP ] Giving pictures from " + album +  " to client.");
         if(validate(password))
             return SharedGalleryFileSystemUtilities.getPicturesFromDirectory(basePath, album);
         return null;
@@ -53,8 +53,10 @@ public class SharedGalleryServerSOAP {
 
     @WebMethod
     public byte [] getPictureData(String album, String picture, String password) {
-        if(validate(password))
+        if(validate(password)) {
+            System.out.println(" [ SOAP ] Giving picture data from " + picture);
             return SharedGalleryFileSystemUtilities.getDataFromPicture(basePath, album, picture);
+        }
         return null;
     }
 
@@ -62,6 +64,9 @@ public class SharedGalleryServerSOAP {
     public String createAlbum(String album, String password) {
         if(validate(password)) {
             if(album.equalsIgnoreCase(SharedGalleryFileSystemUtilities.createDirectory(basePath, album))) {
+
+                System.out.println(" [ SOAP ] Creating album " + album);
+
                 // Metadata
                 String path = "/" + album;
                 metadata_controller.add(path, id, "create", "null");
@@ -80,6 +85,9 @@ public class SharedGalleryServerSOAP {
         if(validate(password)) {
             boolean deleted = SharedGalleryFileSystemUtilities.deleteDirectory(basePath, album);
             if(deleted) {
+
+                System.out.println(" [ SOAP ] Deleting album " + album);
+
                 // Metadata
                 String path = "/" + album;
                 metadata_controller.addOp(path, id, "delete");
@@ -100,6 +108,8 @@ public class SharedGalleryServerSOAP {
             if(new_name != null && picture.equalsIgnoreCase(new_name)) {
                 String no_ext = SharedGalleryFileSystemUtilities.removeExtension(picture);
 
+                System.out.println(" [ SOAP ] Creating picture " + picture);
+
                 // Metadata
                 String path = "/" + album + "/" + no_ext;
                 metadata_controller.add(path, id, "create", picture);
@@ -118,6 +128,9 @@ public class SharedGalleryServerSOAP {
         if(validate(password)) {
             boolean deleted = SharedGalleryFileSystemUtilities.deletePicture(basePath, album, picture);
             if(deleted) {
+
+                System.out.println(" [ SOAP ] Deleting picture " + picture);
+
                 // Metadata
                 String path = "/" + album + "/" + picture;
                 metadata_controller.addOp(path, id, "delete");
@@ -134,11 +147,11 @@ public class SharedGalleryServerSOAP {
     @WebMethod
     public List<String> sendMetadata(String password) {
         if(validate(password)) {
+            System.out.println("[ SOAP ] SENDING METADATA");
             List<String> current_metadata = new ArrayList<>();
             for(Metadata metadata : ((ConcurrentHashMap<String, Metadata>)metadata_controller.getMetadata()).values()) {
                 String content = metadata.converted();
                 current_metadata.add(content);
-                System.out.println("[ SENDING ] " + content);
             }
             return current_metadata;
         }
@@ -177,8 +190,8 @@ public class SharedGalleryServerSOAP {
 
     @SuppressWarnings("ALL")
     private static void compareMetadata(Sync request, List<String> replica_content) {
+        System.out.println("[ SOAP ] SYNCYN WITH " + request.getAddress());
         for(String metadata : replica_content) {
-            System.out.println("[ RECIEVING ] " + metadata);
             String [] data = metadata.split(" ");
             String path = data[0];
             Metadata tmp = new Metadata(path, Integer.parseInt(data[1]), Long.parseLong(data[2]), data[3], data[4]);
@@ -239,17 +252,14 @@ public class SharedGalleryServerSOAP {
                         SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
                 }
                 else {
-                    System.out.println("ENTROU AQUI");
                     if(!metadata_controller.getMetadata().containsKey("/" + album)) {
                         metadata_controller.add("/" + album, id, "create", "null");
                         SharedGalleryFileSystemUtilities.createDirectory(basePath, albumFromMetadata(path));
                     }
                     String picture = pictureFromMetadata(path);
-                    System.out.println("VAI CRIAR " + picture);
                     String ext = data[4];
                     metadata_controller.addFrom(path, tmp);
                     if(event.equalsIgnoreCase("create")) {
-                        System.out.println("[ CREATING NON PICTURE ] " + ext);
                         SharedGalleryFileSystemUtilities.createPicture(basePath, album, ext, request.getPictureData(album, picture));
                     }
                 }
@@ -259,7 +269,6 @@ public class SharedGalleryServerSOAP {
 
     private static boolean isAlbumMetadata(String name) {
         int count = name.length() - name.replaceAll("/", "").length();
-        System.out.println("CONTAGEM: " + count);
         if(count == 2)
             return false;
         return true;
@@ -281,7 +290,7 @@ public class SharedGalleryServerSOAP {
 
     private static void sendToConsumers(String topic, String event) {
         producer.send(new ProducerRecord<>(topic, event));
-        System.out.println("[ PROXY ] Sending event to consumer: " + topic + " " + event);
+        System.out.println("[ SOAP ] Sending event to consumer: " + topic + " " + event);
     }
 
     public static void main(String args[]) throws Exception {

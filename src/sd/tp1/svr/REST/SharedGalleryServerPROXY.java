@@ -145,6 +145,7 @@ public class SharedGalleryServerPROXY {
                         title = album + "_" + id;
                     index_albums.put(title, new SharedGalleryImgurAlbum(id, title));
                     sendToConsumers("Albuns", album + "-create");
+                    System.out.println(" [ PROXY ] Creating album " + album);
                     return Response.status(Response.Status.CREATED).entity(title).build();
                 }
             }
@@ -164,8 +165,6 @@ public class SharedGalleryServerPROXY {
         if(validate(password)) {
             if(index_albums.containsKey(album)) {
 
-                System.out.println("[ PROXY ] Deleting album: " + album);
-
                 String endpoint = "https://api.imgur.com/3/album/" + index_albums.get(album).getId();
                 OAuthRequest albumDel = new OAuthRequest(Verb.DELETE, endpoint, service);
                 albumDel.addBodyParameter("title", album);
@@ -177,6 +176,7 @@ public class SharedGalleryServerPROXY {
                 if(status == OK) {
                     index_albums.remove(album);
                     sendToConsumers("Albuns", album + "-delete");
+                    System.out.println("[ PROXY ] Deleting album: " + album);
                     return Response.ok(true).build();
                 }
                 else if(status == INTERNAL_ERROR)
@@ -247,8 +247,6 @@ public class SharedGalleryServerPROXY {
     public Response getPictureData(@PathParam("album") String album, @PathParam("picture") String picture, @PathParam("password") String password) {
         if(validate(password)) {
 
-            System.out.println("[ PROXY ] Fetching data from picture: " + picture + "from album: " + index_albums.get(album).getId() + " has picture? " + index_albums.get(album).hasPicture(picture));
-
             if(index_albums.containsKey(album) &&  index_albums.get(album).hasPicture(picture)) {
 
                 System.out.println("[ PROXY ] Picture was found now fetching");
@@ -299,7 +297,7 @@ public class SharedGalleryServerPROXY {
         if(validate(password)) {
             if(index_albums.containsKey(album)) {
 
-                System.out.println("[ PROXY ] Uploading picture: " + picture);
+                System.out.println(" [ PROXY ] Creating picture " + picture);
 
                 String endpoint = "https://api.imgur.com/3/image";
                 OAuthRequest picturePost = new OAuthRequest(Verb.POST, endpoint, service);
@@ -350,7 +348,7 @@ public class SharedGalleryServerPROXY {
         if(validate(password)) {
             if(index_albums.containsKey(album) && index_albums.get(album).hasPicture(picture)) {
 
-                System.out.println("[ PROXY ] Deleting picture: " + picture);
+                System.out.println(" [ PROXY ] Deleting picture " + picture);
 
                 String endpoint = "https://api.imgur.com/3/image/" + index_albums.get(album).getPictureId(picture);
                 OAuthRequest picturePost = new OAuthRequest(Verb.DELETE, endpoint, service);
