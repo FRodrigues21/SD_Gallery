@@ -110,7 +110,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			current_topicList.addAll(lst);
 			System.out.println("CHECKING IGNORES");
 			for(String tmp : ignore.keySet()) {
-				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 15) {
+				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 25) {
 					System.out.println("ALBUM " + tmp + " ignored!");
 					lst.remove(tmp);
 				}

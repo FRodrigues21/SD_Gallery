@@ -210,30 +210,25 @@ public class SharedGalleryServerREST {
             for(;;) {
                 boolean executed = false;
                 List<String> content = new ArrayList<>();
-                Sync request = discovery.getServer();
-                if(request != null) {
-                    for(int i = 0; i < 3 && !executed; i++) {
+                for(Sync request : discovery.getServers().values()) {
+                    if(request != null) {
                         try {
                             content = request.sync();
                             executed = true;
                             compareMetadata(request, content);
                         }
                         catch (RuntimeException ex) {
-                            if (request.getTries() == 3 + 1)
-                                discovery.removeServer(request.getAddress());
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e1) {
-                                e1.printStackTrace();
-                            }
+                            discovery.removeServer(request.getAddress());
+                            break;
                         }
                     }
-                }
-                try {
-                    Thread.sleep(10000);
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
+                    try {
+                        if(executed)
+                            Thread.sleep(10000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }).start();
