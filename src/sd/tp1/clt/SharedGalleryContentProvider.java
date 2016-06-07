@@ -157,7 +157,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 		System.out.println("[ CLIENT ] Getting data from picture " + picture);
 
-		System.out.println("[ CLIENT ] Cache current size: " + cache.size());
+		System.err.println("[ CLIENT ] Cache current size: " + cache.size());
 
 		byte [] data;
 
