@@ -118,8 +118,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			}
 			current_topicList.addAll(lst);
 			for(String tmp : ignore.keySet()) {
-				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10)
+				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10) {
+					System.out.println("ALBUM " + tmp + " ignored!");
 					lst.remove(tmp);
+				}
 				else
 					ignore.remove(tmp);
 			}
@@ -272,6 +274,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				try {
 					deleted = e.deleteAlbum(album);
 					if(deleted && current_data.containsKey(album.getName())) {
+						System.out.println("DELETED!");
 						current_data.remove(album.getName());
 						ignore.put(album.getName(), System.currentTimeMillis());
 						executed = true;
@@ -279,6 +282,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					}
 					executed = true;
 				} catch (RuntimeException e1) {
+					System.out.println("DELETE EXCEPTION");
 					if (e.getTries() == MAX_RETRIES + 1)
 						discovery.removeServer(e.getAddress());
 					try {

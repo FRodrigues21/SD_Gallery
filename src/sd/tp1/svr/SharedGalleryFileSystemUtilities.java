@@ -78,8 +78,13 @@ public class SharedGalleryFileSystemUtilities {
      * @return true if the directory was deleted or false otherwise
      */
     public static Boolean deleteDirectory(File basePath, String album) {
+        boolean deleted = false;
         File dirPath = new File(basePath + File.separator + album);
-        return dirPath.exists() && dirPath.isDirectory() && dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
+        if(dirPath.exists() && dirPath.isDirectory()) {
+            deleted = dirPath.renameTo(new File(dirPath.getAbsolutePath() + ".deleted"));
+            dirPath.delete();
+        }
+        return deleted;
     }
 
     /**
