@@ -92,11 +92,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 	private List<String> getListOfAlbumsFromServers() {
 		List<String> lst = new ArrayList<>();
-		boolean executed;
 		if(!discovery.getServers().isEmpty()) {
 			for (Request e : discovery.getServers().values()) {
-				executed = false;
-				for(int i = 0; i < MAX_RETRIES && !executed; i++) {
 					List<String> tmp;
 					try {
 						tmp = e.getListOfAlbums();
@@ -104,20 +101,16 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 							lst.removeAll(tmp);
 							lst.addAll(tmp);
 						}
-						executed = true;
 					}
 					catch (RuntimeException ex) {
-						if (e.getTries() == MAX_RETRIES) {
+							System.out.println("LIST ALBUNS FAILED");
 							discovery.removeServer(e.getAddress());
-							executed = true;
-						}
 					}
-				}
 			}
 			current_topicList.addAll(lst);
 			System.out.println("CHECKING IGNORES");
 			for(String tmp : ignore.keySet()) {
-				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10) {
+				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 15) {
 					System.out.println("ALBUM " + tmp + " ignored!");
 					lst.remove(tmp);
 				}
@@ -138,11 +131,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	}
 
 	private List<String> getListOfPicturesFromServer(String album) {
-		boolean executed;
 		List<String> lst = new ArrayList<>();
 		for(Request e : discovery.getServers().values()) {
-			executed = false;
-			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				List<String> tmp;
 				try {
 					tmp = e.getListOfPictures(new SharedAlbum(album));
@@ -150,14 +140,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						lst.removeAll(tmp);
 						lst.addAll(tmp);
 					}
-					executed = true;
 				} catch (RuntimeException ex) {
-					if (e.getTries() == MAX_RETRIES + 1) {
+						System.out.println("LIST PICTURES FAILED");
 						discovery.removeServer(e.getAddress());
-						executed = true;
-					}
 				}
-			}
 		}
 		return lst;
 	}
@@ -172,7 +158,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		System.out.println("[ CLIENT ] Cache current size: " + cache.size());
 
 		byte [] data;
-		boolean executed;
 
 		if(discovery.getServers().isEmpty())
 			return null;
@@ -190,27 +175,19 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 
 			// Retrieve cache again
 			for(Request e : discovery.getServers().values()) {
-				executed = false;
-				for(int i = 0; !executed && i < MAX_RETRIES; i++) {
-					try {
-						//System.out.println("[ CLIENT ] Fetching picture data from server " + e.getAddress() + " : " + picture.getName());
-						data = e.getPictureData(album, picture);
-						if (data != null && data.length > 1) {
-							SharedPicture cached_picture = new SharedPicture(picture.getName());
-							cached_picture.setData(data);
-							cache.put(album.getName() + '_' + picture.getName(), cached_picture);
-							//System.out.println("[ CLIENT ] Fetched picture data from server: " + picture.getName() + "with size: " + data.length + " bytes");
-							return data;
-						}
-						/*else
-							System.out.println("[ CLIENT ] Fetched data from picture " + picture.getName() + " is null");*/
-						executed = true;
-					} catch (RuntimeException ex) {
-						if (e.getTries() == MAX_RETRIES + 1) {
-							discovery.removeServer(e.getAddress());
-							executed = true;
-						}
+				try {
+					//System.out.println("[ CLIENT ] Fetching picture data from server " + e.getAddress() + " : " + picture.getName());
+					data = e.getPictureData(album, picture);
+					if (data != null && data.length > 1) {
+						SharedPicture cached_picture = new SharedPicture(picture.getName());
+						cached_picture.setData(data);
+						cache.put(album.getName() + '_' + picture.getName(), cached_picture);
+						//System.out.println("[ CLIENT ] Fetched picture data from server: " + picture.getName() + "with size: " + data.length + " bytes");
+						return data;
 					}
+				} catch (RuntimeException ex) {
+					System.out.println("PICTURE DATA FAILED");
+					discovery.removeServer(e.getAddress());
 				}
 			}
 		}
@@ -226,10 +203,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	public Album createAlbum(String name) {
 		if(current_data.containsKey(name) || name.isEmpty() || discovery.getServers().isEmpty())
 			return null;
-		boolean executed = false;
 		int server = (int)(Math.random() * discovery.getServers().size());
 		Request request = new ArrayList<>(discovery.getServers().values()).get(server);
-		for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 			try {
 				String received = request.createAlbum(name);
 				if (received != null && received.equalsIgnoreCase(name))
@@ -239,14 +214,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					ignore.remove(album.getName());
 					return album;
 				}
-				executed = true;
 			} catch (RuntimeException ex) {
-				if (request.getTries() == MAX_RETRIES) {
-					discovery.removeServer(request.getAddress());
-					executed = true;
-				}
+				System.out.println("CREATE ALBUM FAILED");
+				discovery.removeServer(request.getAddress());
 			}
-		}
 		return null;
 	}
 
@@ -255,31 +226,24 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public void deleteAlbum(Album album) {
-		boolean executed;
 		boolean deleted = false;
 		for(Request e : discovery.getServers().values()) {
 			if(deleted)
 				break;
-			executed = false;
-			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					deleted = e.deleteAlbum(album);
 					if(deleted && current_data.containsKey(album.getName())) {
 						System.out.println("DELETED!");
 						current_data.remove(album.getName());
 						ignore.put(album.getName(), System.currentTimeMillis());
-						executed = true;
 						break;
 					}
-					executed = true;
 				} catch (RuntimeException e1) {
-					System.out.println("DELETE EXCEPTION");
+					System.out.println("DELETE ALBUM FAILED");
 					if (e.getTries() == MAX_RETRIES) {
 						discovery.removeServer(e.getAddress());
-						executed = true;
 					}
 				}
-			}
 		}
 	}
 
@@ -292,24 +256,19 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		List<String> current_pictureList = current_data.get(album.getName());
 		if(current_pictureList.contains(name) || discovery.getServers().isEmpty())
 			return null;
-		boolean executed;
 		for(Request e : discovery.getServers().values()) {
-			executed = false;
-			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					String picture = e.uploadPicture(album, name, data);
 					if (picture != null) {
 						current_data.get(album.getName()).add(picture);
 						return new SharedPicture(picture);
 					}
-					executed = true;
 				} catch (RuntimeException ex) {
 					if (e.getTries() == MAX_RETRIES) {
+						System.out.println("UPLOAD PICTURE FAILED");
 						discovery.removeServer(e.getAddress());
-						executed = true;
 					}
 				}
-			}
 		}
 		return null;
 	}
@@ -324,8 +283,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		if(discovery.getServers().isEmpty())
 			return false;
 		for(Request e : discovery.getServers().values()) {
-			executed = false;
-			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
 					if(e.deletePicture(album, picture)) {
 						String key = album.getName() + "_" + picture.getName();
@@ -335,15 +292,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						ignore.put(key, System.currentTimeMillis());
 						return true;
 					}
-					executed = true;
 				}
 				catch (RuntimeException ex) {
-					if (e.getTries() == MAX_RETRIES) {
+						System.out.println("DELETE PICTURE FAILED");
 						discovery.removeServer(e.getAddress());
-						executed = true;
-					}
 				}
-			}
 		}
 		return false;
 	}
