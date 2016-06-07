@@ -86,9 +86,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Album> getListOfAlbums() {
-		if(current_data.isEmpty())
-			return updateAlbums("", "").stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
-		return current_data.keySet().stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
+		return updateAlbums("", "").stream().map(s -> new SharedAlbum(s)).collect(Collectors.toList());
 	}
 
 	private List<String> getListOfAlbumsFromServers() {
@@ -135,9 +133,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public List<Picture> getListOfPictures(Album album) {
-		if(current_data.get(album.getName()).isEmpty())
-			return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
-		return current_data.get(album.getName()).stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
+		return updateAlbum(album.getName(), "", "").stream().map(s -> new SharedPicture(s)).collect(Collectors.toList());
 	}
 
 	private List<String> getListOfPicturesFromServer(String album) {
@@ -403,7 +399,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			try {
 				for (;;) {
 					updateAlbums("", "");
-					Thread.sleep(10000);
+					Thread.sleep(15000);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
