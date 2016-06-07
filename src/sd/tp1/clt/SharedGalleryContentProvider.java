@@ -262,14 +262,16 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	*/
 	@Override
 	public void deleteAlbum(Album album) {
-		boolean executed = false;
+		boolean executed;
+		boolean deleted = false;
 		for(Request e : discovery.getServers().values()) {
-			if(executed)
+			if(deleted)
 				break;
 			executed = false;
 			for(int i = 0; !executed && i < MAX_RETRIES; i++) {
 				try {
-					if(e.deleteAlbum(album) && current_data.containsKey(album.getName())) {
+					deleted = e.deleteAlbum(album);
+					if(deleted && current_data.containsKey(album.getName())) {
 						current_data.remove(album.getName());
 						ignore.put(album.getName(), System.currentTimeMillis());
 						executed = true;
@@ -329,7 +331,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
-		System.out.println("Trying to delete picture.");
 		boolean executed;
 		if(discovery.getServers().isEmpty())
 			return false;
