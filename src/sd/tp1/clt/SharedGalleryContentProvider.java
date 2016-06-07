@@ -107,12 +107,9 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						executed = true;
 					}
 					catch (RuntimeException ex) {
-						if (e.getTries() == MAX_RETRIES + 1)
+						if (e.getTries() == MAX_RETRIES) {
 							discovery.removeServer(e.getAddress());
-						try {
-							Thread.sleep(RETRY_TIME);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
+							executed = true;
 						}
 					}
 				}
@@ -155,8 +152,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					}
 					executed = true;
 				} catch (RuntimeException ex) {
-					if (e.getTries() == MAX_RETRIES + 1)
+					if (e.getTries() == MAX_RETRIES + 1) {
 						discovery.removeServer(e.getAddress());
+						executed = true;
+					}
 				}
 			}
 		}
@@ -207,8 +206,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 							System.out.println("[ CLIENT ] Fetched data from picture " + picture.getName() + " is null");*/
 						executed = true;
 					} catch (RuntimeException ex) {
-						if (e.getTries() == MAX_RETRIES + 1)
+						if (e.getTries() == MAX_RETRIES + 1) {
 							discovery.removeServer(e.getAddress());
+							executed = true;
+						}
 					}
 				}
 			}
@@ -240,8 +241,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				}
 				executed = true;
 			} catch (RuntimeException ex) {
-				if (request.getTries() == MAX_RETRIES + 1)
+				if (request.getTries() == MAX_RETRIES) {
 					discovery.removeServer(request.getAddress());
+					executed = true;
+				}
 			}
 		}
 		return null;
@@ -271,8 +274,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					executed = true;
 				} catch (RuntimeException e1) {
 					System.out.println("DELETE EXCEPTION");
-					if (e.getTries() == MAX_RETRIES)
+					if (e.getTries() == MAX_RETRIES) {
 						discovery.removeServer(e.getAddress());
+						executed = true;
+					}
 				}
 			}
 		}
@@ -299,8 +304,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					}
 					executed = true;
 				} catch (RuntimeException ex) {
-					if (e.getTries() == MAX_RETRIES+1)
+					if (e.getTries() == MAX_RETRIES) {
 						discovery.removeServer(e.getAddress());
+						executed = true;
+					}
 				}
 			}
 		}
@@ -331,8 +338,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					executed = true;
 				}
 				catch (RuntimeException ex) {
-					if(e.getTries() == MAX_RETRIES+1)
+					if (e.getTries() == MAX_RETRIES) {
 						discovery.removeServer(e.getAddress());
+						executed = true;
+					}
 				}
 			}
 		}
