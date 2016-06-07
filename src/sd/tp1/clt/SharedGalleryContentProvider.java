@@ -230,20 +230,18 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		for(Request e : discovery.getServers().values()) {
 			if(deleted)
 				break;
-				try {
-					deleted = e.deleteAlbum(album);
-					if(deleted && current_data.containsKey(album.getName())) {
-						System.out.println("DELETED!");
-						current_data.remove(album.getName());
-						ignore.put(album.getName(), System.currentTimeMillis());
-						break;
-					}
-				} catch (RuntimeException e1) {
-					System.out.println("DELETE ALBUM FAILED");
-					if (e.getTries() == MAX_RETRIES) {
-						discovery.removeServer(e.getAddress());
-					}
+			try {
+				deleted = e.deleteAlbum(album);
+				if(deleted && current_data.containsKey(album.getName())) {
+					System.out.println("DELETED!");
+					current_data.remove(album.getName());
+					ignore.put(album.getName(), System.currentTimeMillis());
+					break;
 				}
+			} catch (RuntimeException e1) {
+				System.out.println("DELETE ALBUM FAILED");
+				discovery.removeServer(e.getAddress());
+			}
 		}
 	}
 
@@ -279,7 +277,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 	 */
 	@Override
 	public boolean deletePicture(Album album, Picture picture) {
-		boolean executed;
 		if(discovery.getServers().isEmpty())
 			return false;
 		for(Request e : discovery.getServers().values()) {
