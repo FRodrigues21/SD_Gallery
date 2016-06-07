@@ -420,12 +420,13 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		List<String> lst_current;
 		if(!event.equalsIgnoreCase("")) {
 			if(event.equalsIgnoreCase("create")) {
-				createAlbum(name);
-				System.out.println("[ UPDATE ] Created album " + name);
+				if(!current_data.containsKey(name))
+					current_data.put(name, new ArrayList<>());
 			}
 			else {
-				deleteAlbum(new SharedAlbum(name));
-				System.out.println("[ UPDATE ] Deleted album " + name);
+				if(current_data.containsKey(name))
+					current_data.remove(name);
+				ignore.put(name, System.currentTimeMillis());
 			}
 			lst_current = new ArrayList<>(current_data.keySet());
 			gui.updateAlbums();
@@ -449,7 +450,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		System.out.println("[ CLIENT ] Updating list of pictures from " + album);
 		List<String> lst_current;
 		if(picture != null && event != null && event.equalsIgnoreCase("delete")) {
-			deletePicture(new SharedAlbum(album), new SharedPicture(picture));
+			current_data.get(album).remove(picture);
+			String key = album + "_" + picture;
+			if(cache.containsKey(key))
+				cache.remove(key);
 			lst_current = current_data.get(album);
 			gui.updateAlbum(new SharedAlbum(album));
 		}
