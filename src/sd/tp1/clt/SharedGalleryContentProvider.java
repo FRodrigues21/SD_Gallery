@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.Properties;
@@ -59,7 +60,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		} catch (Exception e) {
 			System.err.println("CLIENT ERROR: CLIENT HAS NO ADDRESS! SO IT'S UNREACHABLE");
 		}
-		ignore = new HashMap<>();
+		ignore = new ConcurrentHashMap<>();
 		cache = new SharedGalleryContentCache<>(MAX_CACHE_CAPACITY);
 		current_data = new HashMap<>();
 		setupConsumer();
