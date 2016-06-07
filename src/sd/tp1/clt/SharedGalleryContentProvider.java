@@ -117,6 +117,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				}
 			}
 			current_topicList.addAll(lst);
+			System.out.println("CHECKING IGNORES");
 			for(String tmp : ignore.keySet()) {
 				if(timeBetween(ignore.get(tmp), System.currentTimeMillis()) < 10) {
 					System.out.println("ALBUM " + tmp + " ignored!");
@@ -243,6 +244,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				{
 					SharedAlbum album = new SharedAlbum(name);
 					current_data.put(album.getName(), new ArrayList<>());
+					ignore.remove(album.getName());
 					return album;
 				}
 				executed = true;
@@ -283,7 +285,7 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					executed = true;
 				} catch (RuntimeException e1) {
 					System.out.println("DELETE EXCEPTION");
-					if (e.getTries() == MAX_RETRIES + 1)
+					if (e.getTries() == MAX_RETRIES)
 						discovery.removeServer(e.getAddress());
 					try {
 						Thread.sleep(RETRY_TIME);
@@ -418,13 +420,11 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		List<String> lst_current;
 		if(!event.equalsIgnoreCase("")) {
 			if(event.equalsIgnoreCase("create")) {
-				if(!current_data.containsKey(name))
-					current_data.put(name, new ArrayList<>());
+				createAlbum(name);
 				System.out.println("[ UPDATE ] Created album " + name);
 			}
 			else {
-				if(current_data.containsKey(name))
-					current_data.remove(name);
+				deleteAlbum(new SharedAlbum(name));
 				System.out.println("[ UPDATE ] Deleted album " + name);
 			}
 			lst_current = new ArrayList<>(current_data.keySet());
@@ -449,23 +449,17 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 		System.out.println("[ CLIENT ] Updating list of pictures from " + album);
 		List<String> lst_current;
 		if(picture != null && event != null && event.equalsIgnoreCase("delete")) {
-			current_data.get(album).remove(picture);
-			String key = album + "_" + picture;
-			if(cache.containsKey(key))
-				cache.remove(key);
-			System.out.println("[ UPDATE ] Deleted picture " + picture);
+			deletePicture(new SharedAlbum(album), new SharedPicture(picture));
 			lst_current = current_data.get(album);
 			gui.updateAlbum(new SharedAlbum(album));
 		}
 		else {
-			System.out.println("Entrou");
 			lst_current = current_data.get(album);
 			List<String> lst_possible = getListOfPicturesFromServer(album);
 			if(!listsAreEqual(lst_current, lst_possible)) {
 				current_data.put(album, lst_possible);
 				gui.updateAlbum(new SharedAlbum(album));
 			}
-			System.out.println("Saiu");
 		}
 		return lst_current;
 	}
