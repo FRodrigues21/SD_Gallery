@@ -77,8 +77,9 @@ public class SharedGalleryFileSystemUtilities {
      * @param album - Name of the directory
      * @return true if the directory was deleted or false otherwise
      */
-    public static Boolean deleteDirectory(File basePath, String album) {
+    public static boolean deleteDirectory(File basePath, String album) {
         File dirPath = new File(basePath + File.separator + album);
+        System.out.println("DELETING ALBUM: " + dirPath.getAbsolutePath());
         return dirPath.exists() && dirPath.isDirectory() && dirPath.delete();
     }
 
@@ -114,9 +115,9 @@ public class SharedGalleryFileSystemUtilities {
         for(String ext : EXTENSIONS) {
             File filePath = new File(basePath + File.separator + album + File.separator + picture + "." + ext);
             if(filePath.exists() && filePath.isFile()) {
-                filePath.delete();
+                System.out.println("DELETING PICTURE: " + filePath.getAbsolutePath());
+                return filePath.delete();
                 //filePath.renameTo(new File(filePath.getAbsolutePath() + ".deleted"));
-                return true;
             }
         }
         return false;

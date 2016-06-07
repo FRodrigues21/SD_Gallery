@@ -232,9 +232,10 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				break;
 			try {
 				deleted = e.deleteAlbum(album);
-				if(deleted && current_data.containsKey(album.getName())) {
-					System.out.println("DELETED!");
-					current_data.remove(album.getName());
+				System.out.println("DELETE? " + deleted);
+				if(deleted) {
+					if(current_data.containsKey(album.getName()))
+						current_data.remove(album.getName());
 					ignore.put(album.getName(), System.currentTimeMillis());
 					break;
 				}

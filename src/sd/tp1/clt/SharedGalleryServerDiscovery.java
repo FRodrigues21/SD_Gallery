@@ -39,7 +39,6 @@ public class SharedGalleryServerDiscovery implements Runnable {
      */
     public void removeServer(String address) {
         servers.remove(address);
-        provider.updateAlbums("", "");
     }
 
     public void run() {
