@@ -157,11 +157,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				} catch (RuntimeException ex) {
 					if (e.getTries() == MAX_RETRIES + 1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(RETRY_TIME);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
@@ -214,11 +209,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					} catch (RuntimeException ex) {
 						if (e.getTries() == MAX_RETRIES + 1)
 							discovery.removeServer(e.getAddress());
-						try {
-							Thread.sleep(RETRY_TIME);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
 					}
 				}
 			}
@@ -252,11 +242,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 			} catch (RuntimeException ex) {
 				if (request.getTries() == MAX_RETRIES + 1)
 					discovery.removeServer(request.getAddress());
-				try {
-					Thread.sleep(RETRY_TIME);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
 			}
 		}
 		return null;
@@ -288,11 +273,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 					System.out.println("DELETE EXCEPTION");
 					if (e.getTries() == MAX_RETRIES)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(RETRY_TIME);
-					} catch (InterruptedException e2) {
-						e2.printStackTrace();
-					}
 				}
 			}
 		}
@@ -321,11 +301,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				} catch (RuntimeException ex) {
 					if (e.getTries() == MAX_RETRIES+1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(RETRY_TIME);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
@@ -358,11 +333,6 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 				catch (RuntimeException ex) {
 					if(e.getTries() == MAX_RETRIES+1)
 						discovery.removeServer(e.getAddress());
-					try {
-						Thread.sleep(RETRY_TIME);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
 				}
 			}
 		}
