@@ -165,7 +165,7 @@ public class SharedGalleryServerSOAP {
                     }
                     try {
                         if(executed)
-                            Thread.sleep(10000);
+                            Thread.sleep(5000);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
