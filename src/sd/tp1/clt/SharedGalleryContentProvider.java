@@ -103,8 +103,8 @@ public class SharedGalleryContentProvider implements GalleryContentProvider {
 						}
 					}
 					catch (RuntimeException ex) {
-							System.err.println("[ CLIENT ] Failed to retrieve list of albuns, deleting server.");
-							discovery.removeServer(e.getAddress());
+						System.err.println("[ CLIENT ] Failed to retrieve list of albuns, deleting server.");
+						discovery.removeServer(e.getAddress());
 					}
 			}
 			current_topicList.addAll(lst);

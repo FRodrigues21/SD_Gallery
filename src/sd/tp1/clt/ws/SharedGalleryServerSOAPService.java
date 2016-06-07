@@ -17,7 +17,7 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.2
  * 
  */
-@WebServiceClient(name = "SharedGalleryServerSOAPService", targetNamespace = "http://SOAP.svr.tp1.sd/", wsdlLocation = "http://192.168.1.3:9000/FileServerSOAP?wsdl")
+@WebServiceClient(name = "SharedGalleryServerSOAPService", targetNamespace = "http://SOAP.svr.tp1.sd/", wsdlLocation = "http://10.171.123.243:9000/FileServerSOAP?wsdl")
 public class SharedGalleryServerSOAPService
     extends Service
 {
@@ -30,7 +30,7 @@ public class SharedGalleryServerSOAPService
         URL url = null;
         WebServiceException e = null;
         try {
-            url = new URL("http://192.168.1.3:9000/FileServerSOAP?wsdl");
+            url = new URL("http://10.171.123.243:9000/FileServerSOAP?wsdl");
         } catch (MalformedURLException ex) {
             e = new WebServiceException(ex);
         }
